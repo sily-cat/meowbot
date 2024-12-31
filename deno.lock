@@ -1,0 +1,7 @@
+{
+  "version": "4",
+  "remote": {
+    "https://esm.sh/tweetnacl@v1.0.3": "13133e31846263021452da8b831805de7b0694a5dc56f4c5567629c8aba589fd",
+    "https://esm.sh/v135/tweetnacl@1.0.3/denonext/tweetnacl.mjs": "b4b0ea92630faa255eef33b2ac85734313cd8930834375bb2527392f1823775e"
+  }
+}
