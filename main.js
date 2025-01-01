@@ -125,6 +125,9 @@ Deno.serve(async (req) => {
             case "ping":
                 payload.data.content = "pong!\nregion: " + Deno.env.get("DENO_REGION");
                 break;
+            case "octad":
+                console.log(body);
+                break;
         }
         return new Response(
             JSON.stringify(payload),
