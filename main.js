@@ -126,7 +126,15 @@ Deno.serve(async (req) => {
                 payload.data.content = "pong!\nregion: " + Deno.env.get("DENO_REGION");
                 break;
             case "octad":
-                console.log(body);
+                switch (body.data.options[0].name) {
+                    case "generate":
+                        payload.data.content = octadPuzzle();
+                        break;
+                    case "solve":
+                        payload.data.flags = 64;
+                        payload.data.content = "i can't do that yet, sorry!!"
+                        break;
+                }
                 break;
         }
         return new Response(
@@ -233,4 +241,20 @@ async function getCat() { // might switch to cataas as it doesnt have a limit
     var text = await cat.text();
     var body = JSON.parse(text);
     return body[0].url;
+}
+
+function octadPuzzle() {
+    var puzzle = "•••• •••• •••• •••• •••• ••••".split("");
+    var i = 0;
+    var possible_index;
+    while (i < 5) {
+        possible_index = getRandomInt(puzzle.length - 1);
+        if (puzzle[possible_index] == "•") {
+            puzzle[possible_index] = 1;
+            i++;
+        } else {
+            continue;
+        }
+    }
+    return puzzle.join("");
 }
