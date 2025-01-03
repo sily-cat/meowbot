@@ -136,6 +136,15 @@ Deno.serve(async (req) => {
                         break;
                 }
                 break;
+            case "catness":
+                if (body.data.options[0]) {
+                    console.log("it exists!");
+                    console.log(body.data.options[0]);
+                } else {
+                    console.log("it doesn't exist!!");
+                    console.log(body.data);
+                }
+                break;
         }
         return new Response(
             JSON.stringify(payload),
