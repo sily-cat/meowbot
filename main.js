@@ -169,7 +169,6 @@ Deno.serve(async (req) => {
                 } else if (username.includes("sin")) {
                     const catness = 24;
                     payload.data.content = username + " is **" + catness + "%** cat!!";
-                }
                 } else {
                     payload.data.content = username + " is **" + getRandomInt(100) + "%** cat!!"
                 }
