@@ -154,11 +154,8 @@ Deno.serve(async (req) => {
                             username = body.user.global_name;
                         }
                     } else {
-                        if (Object.keys(body.member).includes("nick")) {
-                            console.log(body.member.nick);
-                            if (!(body.member.nick == null)) {
-                                username = body.member.nick;
-                            }
+                        if (body.member.nick !== null) {
+                            username = body.member.nick;
                         } else if (body.member.user.global_name == null) {
                             username = body.member.user.username;
                         } else {
@@ -166,11 +163,11 @@ Deno.serve(async (req) => {
                         }
                     }
                 }
-                if (username.includes("cat") || username.includes("ii") || username.includes("meow") || username.includes("sun")) { // bias
+                if (username.includes("cat") || username.includes("ii") || username.includes("meow") || username.includes("sun") || username.includes("ie") || username.includes("!")) { // bias
                     const catness = 90 + getRandomInt(10);
-                    payload.data.content = username + " is " + catness + "% cat!!";
+                    payload.data.content = username + " is **" + catness + "%** cat!!";
                 } else {
-                    payload.data.content = username + " is " + getRandomInt(100) + "% cat!!"
+                    payload.data.content = username + " is **" + getRandomInt(100) + "%** cat!!"
                 }
                 break;
         }
