@@ -166,6 +166,10 @@ Deno.serve(async (req) => {
                 if (username.includes("cat") || username.includes("ii") || username.includes("meow") || username.includes("sun") || username.includes("ie") || username.includes("!")) { // bias
                     const catness = 90 + getRandomInt(10);
                     payload.data.content = username + " is **" + catness + "%** cat!!";
+                } else if (username.includes("sin")) {
+                    const catness = 24;
+                    payload.data.content = username + " is **" + catness + "%** cat!!";
+                }
                 } else {
                     payload.data.content = username + " is **" + getRandomInt(100) + "%** cat!!"
                 }
