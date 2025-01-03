@@ -140,6 +140,7 @@ Deno.serve(async (req) => {
                 var username;
                 if (Object.keys(body.data).includes("options")) {
                     const users = body.data.resolved.users;
+                    const key_name = Object.keys(users)[0];
                     if (users.global_name = null) {
                         username = users[key_name].username;
                     } else {
