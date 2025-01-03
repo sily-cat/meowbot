@@ -137,7 +137,8 @@ Deno.serve(async (req) => {
                 }
                 break;
             case "catness":
-                if (typeof body.data.options[0] == "undefined") {
+                console.log(body.data);
+                if (typeof body.data.options == "undefined") {
                     const user = await get(api + "/users/" + body.data.options[0].value);
                 } else {
                     const user = body.member.user;
