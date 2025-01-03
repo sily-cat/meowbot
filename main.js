@@ -139,10 +139,12 @@ Deno.serve(async (req) => {
             case "catness":
                 var username;
                 if (Object.keys(body.data).includes("options")) {
-                    if (Object.keys(body.data.resolved.users[0]).includes("global_name")) {
-                        username = body.data.resolved.users[0].global_name;
+                    const users = body.data.resolved.users;
+                    const key_num = users[Object.keys(users)[0]];
+                    if (Object.keys(key_num).includes("global_name")) {
+                        username = users[key_num].global_name;
                     } else {
-                        username = body.data.resolved.users[0].username;
+                        username = users[key_num].username;
                     }
                 } else {
                     if (Object.keys(body).includes("user")) {
