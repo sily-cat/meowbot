@@ -154,14 +154,18 @@ Deno.serve(async (req) => {
                             username = body.user.global_name;
                         }
                     } else {
-                        if (body.member.user.global_name == null) {
+                        if (Object.keys(body.member).includes("nick")) {
+                            if (body.member.nick != null) {
+                                username = body.member.nick;
+                            }
+                        } else if (body.member.user.global_name == null) {
                             username = body.member.user.username;
                         } else {
                             username = body.member.user.global_name;
                         }
                     }
                 }
-                if (username.includes("cat") || username.includes("ii") || username.includes("meow")) { // bias
+                if (username.includes("cat") || username.includes("ii") || username.includes("meow") || username.includes("sun")) { // bias
                     const catness = 90 + getRandomInt(10);
                     payload.data.content = username + " is " + catness + "% cat!!";
                 } else {
