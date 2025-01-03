@@ -155,7 +155,8 @@ Deno.serve(async (req) => {
                         }
                     } else {
                         if (Object.keys(body.member).includes("nick")) {
-                            if (body.member.nick != null) {
+                            console.log(body.member.nick);
+                            if (!(body.member.nick == null)) {
                                 username = body.member.nick;
                             }
                         } else if (body.member.user.global_name == null) {
