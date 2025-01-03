@@ -140,26 +140,23 @@ Deno.serve(async (req) => {
                 var username;
                 if (Object.keys(body.data).includes("options")) {
                     const users = body.data.resolved.users;
-                    console.log(users);
-                    console.log(Object.keys(users)[0]);
-                    const key_name = Object.keys(users)[0];
-                    if (Object.keys(users[key_name]).includes("global_name")) {
-                        username = users[key_name].global_name;
-                    } else {
+                    if (users.global_name = null) {
                         username = users[key_name].username;
+                    } else {
+                        username = users[key_name].global_name;
                     }
                 } else {
                     if (Object.keys(body).includes("user")) {
-                        if (Object.keys(body.user).includes("global_name")) {
-                            username = body.user.global_name;
-                        } else {
+                        if (body.user.global_name == null) {
                             username = body.user.username;
+                        } else {
+                            username = body.user.global_name;
                         }
                     } else {
-                        if (Object.keys(body.member.user).includes("global_name")) {
-                            username = body.member.user.global_name;
-                        } else {
+                        if (body.member.user.global_name == null) {
                             username = body.member.user.username;
+                        } else {
+                            username = body.member.user.global_name;
                         }
                     }
                 }
