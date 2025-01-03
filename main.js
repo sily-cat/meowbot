@@ -137,17 +137,33 @@ Deno.serve(async (req) => {
                 }
                 break;
             case "catness":
-                console.log(body.data);
-                if (typeof body.data.options == "undefined") {
-                    const user = await get(api + "/users/" + body.data.options[0].value);
+                var username;
+                if (body.data.keys().includes("options")) {
+                    if (body.data.resolved.users[0].keys().includes("global_name")) {
+                        username = body.data.resolved.users[0].global_name;
+                    } else {
+                        username = body.data.resolved.users[0].username;
+                    }
                 } else {
-                    const user = body.member.user;
+                    if (body.keys().includes("user")) {
+                        if (body.user.keys().includes("global_name")) {
+                            username = body.user.global_name;
+                        } else {
+                            username = body.user.username;
+                        }
+                    } else {
+                        if (body.member.user.keys().includes("global_name")) {
+                            username = body.member.user.global_name;
+                        } else {
+                            username = body.member.user.username;
+                        }
+                    }
                 }
-                if (user.username.includes("cat") || user.username.includes("ii") || user.username.includes("meow")) { // bias
+                if (username.includes("cat") || username.includes("ii") || username.includes("meow")) { // bias
                     const catness = 90 + getRandomInt(10);
-                    payload.data.content = user.username + " is " + catness + "% cat!!";
+                    payload.data.content = username + " is " + catness + "% cat!!";
                 } else {
-                    payload.data.content = user.username + " is " + getRandomInt(100) + "% cat!!"
+                    payload.data.content = username + " is " + getRandomInt(100) + "% cat!!"
                 }
                 break;
         }
@@ -177,7 +193,6 @@ Deno.serve(async (req) => {
                     headers: head,
                     body: JSON.stringify({ components: [] })
                 });
-                console.log(thing);
                 var cat = await getCat();
                 payload.data.content = "[cat](" + cat + ")";
                 payload.data.components = [ // might make a function to simplify adding components later
