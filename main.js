@@ -137,12 +137,16 @@ Deno.serve(async (req) => {
                 }
                 break;
             case "catness":
-                if (body.data.options[0]) {
-                    console.log("it exists!");
-                    console.log(body.data.options[0]);
+                if (typeof body.data.options[0] == "undefined") {
+                    const user = await get(api + "/users/" + body.data.options[0].value);
                 } else {
-                    console.log("it doesn't exist!!");
-                    console.log(body.data);
+                    const user = body.member.user;
+                }
+                if (user.username.includes("cat") || user.username.includes("ii") || user.username.includes("meow")) { // bias
+                    const catness = 90 + getRandomInt(10);
+                    payload.data.content = user.username + " is " + catness + "% cat!!";
+                } else {
+                    payload.data.content = user.username + " is " + getRandomInt(100) + "% cat!!"
                 }
                 break;
         }
@@ -240,16 +244,20 @@ async function sendMessage(message, channel) {
 }
 
 async function getCat() { // might switch to cataas as it doesnt have a limit
-    var url = "https://api.thecatapi.com/v1/images/search";
-    var cat = await fetch(url, {
-        method: "GET",
-        headers: {
-            'x-api-key': Deno.env.get("CAT_API")
-        }
-    });
-    var text = await cat.text();
-    var body = JSON.parse(text);
+    const url = "https://api.thecatapi.com/v1/images/search";
+    const header = { 'x-api-key': Deno.env.get("CAT_API") }
+    var body = await get(url, header);
     return body[0].url;
+}
+
+async function get(url, header) {
+    var result = await fetch(url, {
+        method: "GET",
+        headers: header
+    });
+    var text = await result.text();
+    var body = JSON.parse(text);
+    return body;
 }
 
 function octadPuzzle() {
