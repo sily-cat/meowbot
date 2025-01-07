@@ -1,4 +1,4 @@
-import { solveOctad } from "./octad";
+import { solveOctad } from "./octad.js";
 import nacl from "https://esm.sh/tweetnacl@v1.0.3"; // i dont want to learn how authentication works
 import { Buffer } from "node:buffer"; // needs this for some reason? idk i copied the authentication code from discord
 const public_key = Deno.env.get("PUBLIC_KEY");
