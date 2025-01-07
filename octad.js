@@ -78,7 +78,7 @@ for (let target = 24; target < 29; target++) {
                 permute("block_swap", 0);
             }
 
-            mini_cycle_counter = 0;
+            let mini_cycle_counter = 0;
 
             while (digit_arr.indexOf(target) % 4 != 3) {
 
