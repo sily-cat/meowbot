@@ -263,7 +263,16 @@ function meowText() {
         "mroww :3",
         "mreow >w<",
         "meoww :3",
-        "mrrp :3"
+        "mrrp :3",
+        "nyan :3",
+        "mlem :3",
+        "meowmeow",
+        "maow :3",
+        "maow ^w^",
+        "purrrrr ~w~",
+        "nyaaa",
+        "miau ~w~",
+        "miau :3"
     ];
     return meows[getRandomInt(meows.length - 1)];
 }
