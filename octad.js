@@ -52,7 +52,7 @@ for (let target = 24; target < 29; target++) {
 
         if (digit_arr.indexOf(target) < 4) {
 
-            main_cycle_counter = 0;
+            let main_cycle_counter = 0;
 
             while (digit_arr.indexOf(target) < 4) {
 
