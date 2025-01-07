@@ -142,7 +142,12 @@ Deno.serve(async (req) => {
                             }
                         }
                         var output_octad = solveOctad(input_octad);
-                        payload.data.content = output_octad.join(" ");
+                        output_octad.splice(20, 0, " ");
+                        output_octad.splice(16, 0, " ");
+                        output_octad.splice(12, 0, " ");
+                        output_octad.splice(8, 0, " ");
+                        output_octad.splice(4, 0, " ");
+                        payload.data.content = output_octad.join("");
                         break;
                 }
                 break;
