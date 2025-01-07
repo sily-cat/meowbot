@@ -1,4 +1,4 @@
-
+import { solveOctad } from "./octad";
 import nacl from "https://esm.sh/tweetnacl@v1.0.3"; // i dont want to learn how authentication works
 import { Buffer } from "node:buffer"; // needs this for some reason? idk i copied the authentication code from discord
 const public_key = Deno.env.get("PUBLIC_KEY");
@@ -131,8 +131,18 @@ Deno.serve(async (req) => {
                         payload.data.content = octadPuzzle();
                         break;
                     case "solve":
-                        payload.data.flags = 64;
-                        payload.data.content = "i can't do that yet, sorry!!"
+                        var msg = body.data.options[0].value;
+                        var input_octad = [];
+                        for (var i = 0; i < msg.length; i++) {
+                            if (msg[i] === "0" || msg[i] === "•") {
+                                input_octad.push(0);
+                            }
+                            if (msg[i] === "1") {
+                                input_octad.push(1);
+                            }
+                        }
+                        var output_octad = solveOctad(input_octad);
+                        payload.data.content = output_octad.join(" ");
                         break;
                 }
                 break;
