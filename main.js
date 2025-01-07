@@ -131,7 +131,7 @@ Deno.serve(async (req) => {
                         payload.data.content = octadPuzzle();
                         break;
                     case "solve":
-                        var msg = body.data.options[0].value;
+                        var msg = body.data.options[0].options[0].value;
                         var input_octad = [];
                         for (var i = 0; i < msg.length; i++) {
                             if (msg[i] === "0" || msg[i] === "•") {
