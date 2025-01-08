@@ -1,4 +1,5 @@
 import { solveOctad } from "./octad.js";
+import { default as Alea, Mash } from "jsr:@iv/alea";
 import nacl from "https://esm.sh/tweetnacl@v1.0.3"; // i dont want to learn how authentication works
 import { Buffer } from "node:buffer"; // needs this for some reason? idk i copied the authentication code from discord
 const public_key = Deno.env.get("PUBLIC_KEY");
@@ -92,6 +93,16 @@ Deno.serve(async (req) => {
         switch (body.data.name) {
             case "meow":
                 payload.data.content = meowText();
+                break;
+            case "wipers":
+                const current_date = new Date();
+                const random_seed = " " + current_date.getDate() + " " + current_date.getFullYear() + " " + current_date.getMonth();
+                const wiper_sale = seedRandomInt(10, random_seed);
+                if (wiper_sale >= 6) {
+                    payload.data.content = "Windshield wipers are **" + wiper_sale + "0%** off today!!"
+                } else {
+                    payload.data.content = "Windshield wipers are not on sale today";
+                }
                 break;
             case "say":
                 payload.data.content = body.data.options[0].value;
@@ -254,6 +265,13 @@ Deno.serve(async (req) => {
 
 function getRandomInt(max) { // stole this from mdn web docs
     return Math.floor(Math.random() * max);
+}
+
+function seedRandomInt(max, seed) {
+    const alea = new Alea({
+        seed: seed
+    });
+    return Math.floor(alea.random() * max)
 }
 
 function meowText() {
