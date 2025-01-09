@@ -99,9 +99,9 @@ Deno.serve(async (req) => {
                 const random_seed = " " + current_date.getDate() + " " + current_date.getFullYear() + " " + current_date.getMonth();
                 const wiper_sale = seedRandomInt(10, random_seed);
                 if (wiper_sale >= 6) {
-                    payload.data.content = "Windshield wipers are **" + wiper_sale + "0%** off today!!"
+                    payload.data.content = "windshield wipers are **" + wiper_sale + "0% off** today!!";
                 } else {
-                    payload.data.content = "Windshield wipers are not on sale today";
+                    payload.data.content = "windshield wipers are not on sale today";
                 }
                 break;
             case "say":
@@ -110,6 +110,12 @@ Deno.serve(async (req) => {
             case "send":
                 payload.data.content = "Message recieved";
                 payload.data.flags = 64; // ephemeral
+                console.log(body);
+                if (Object.keys(body).includes("member")) {
+                    if (Object.keys(body.member).includes("roles")) {
+                        console.log(body.member.roles);
+                    }
+                }
                 if (body.data.options[0].value.includes("@")) {
                     payload.data.content = "@ is not allowed in /send";
                 } else {
