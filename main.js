@@ -114,7 +114,7 @@ Deno.serve(async (req) => {
                     if (Object.keys(body.member).includes("roles")) {
                         const guild_roles = await get(api + "/guilds/" + body.guild_id + "/roles", head);
                         const send_role = guild_roles.find((el) => el.name == "meowbot send");
-                        if (body.member.roles.includes(send_role.id)) {
+                        if (send_role && body.member.roles.includes(send_role.id)) {
                             if (body.data.options[0].value.includes("@")) {
                                 payload.data.content = "@ is not allowed in /send";
                             } else {
