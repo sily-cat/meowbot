@@ -110,10 +110,9 @@ Deno.serve(async (req) => {
             case "send":
                 payload.data.content = "Message recieved";
                 payload.data.flags = 64; // ephemeral
-                console.log(body);
                 if (Object.keys(body).includes("member")) {
                     if (Object.keys(body.member).includes("roles")) {
-                        console.log(body.member.roles);
+                        console.log(body.member.permissions);
                     }
                 }
                 if (body.data.options[0].value.includes("@")) {
