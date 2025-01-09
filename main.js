@@ -108,17 +108,21 @@ Deno.serve(async (req) => {
                 payload.data.content = body.data.options[0].value;
                 break;
             case "send":
-                payload.data.content = "Message recieved";
+                payload.data.content = "/send requires the `meowbot send` role";
                 payload.data.flags = 64; // ephemeral
                 if (Object.keys(body).includes("member")) {
                     if (Object.keys(body.member).includes("roles")) {
-                        console.log(body.member.permissions);
+                        const guild_roles = await get(url + "/guilds/" + body.guild_id + "/roles", head);
+                        const send_role = guild_roles.find((el) => el.name == "meowbot send");
+                        if (body.member.roles.includes(send_role.id)) {
+                            if (body.data.options[0].value.includes("@")) {
+                                payload.data.content = "@ is not allowed in /send";
+                            } else {
+                                payload.data.content = "message recieved";
+                                sendMessage(body.data.options[0].value, body.channel_id);
+                            }
+                        }
                     }
-                }
-                if (body.data.options[0].value.includes("@")) {
-                    payload.data.content = "@ is not allowed in /send";
-                } else {
-                    sendMessage(body.data.options[0].value, body.channel_id);
                 }
                 break;
             case "cat":
