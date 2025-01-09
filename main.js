@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
                 payload.data.flags = 64; // ephemeral
                 if (Object.keys(body).includes("member")) {
                     if (Object.keys(body.member).includes("roles")) {
-                        const guild_roles = await get(url + "/guilds/" + body.guild_id + "/roles", head);
+                        const guild_roles = await get(api + "/guilds/" + body.guild_id + "/roles", head);
                         const send_role = guild_roles.find((el) => el.name == "meowbot send");
                         if (body.member.roles.includes(send_role.id)) {
                             if (body.data.options[0].value.includes("@")) {
