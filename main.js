@@ -143,7 +143,9 @@ Deno.serve(async (req) => {
                 ];
                 break;
             case "ping":
-                payload.data.content = "pong!\nregion: " + Deno.env.get("DENO_REGION");
+                const curent_date = new Date();
+                const radom_seed = " " + curent_date.getDate() + " " + curent_date.getFullYear() + " " + curent_date.getMonth();
+                payload.data.content = "pong!\nregion: " + Deno.env.get("DENO_REGION") + "\ndatetime: " + radom_seed;
                 break;
             case "octad":
                 switch (body.data.options[0].name) {
