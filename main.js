@@ -431,18 +431,18 @@ async function updateCommands() {
         {
             name: "octad",
             description: "octad",
-            type: 2,
+            type: 1,
             options: [
                 {
                     name: "generate",
-                    description: "generate octad puzzle",
+                    description: "generate a puzzle",
                     type: 1,
                     contexts: [0, 1, 2],
                     integration_types: [0, 1]
                 },
                 {
-                    name: "send",
-                    description: "send something as the bot",
+                    name: "solve",
+                    description: "solve a puzzle",
                     type: 1,
                     contexts: [0],
                     integration_types: [0],
