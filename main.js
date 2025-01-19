@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
                 break;
             case "update":
                 if (body.user.id == my_id) {
-                    payload.data.content = "updated commands";
+                    payload.data.content = await updateCommands();
                 }
                 break;
             case "wipers":
@@ -355,4 +355,86 @@ function octadPuzzle() {
         }
     }
     return puzzle.join("");
+}
+
+async function updateCommands() {
+    var url = api + "/applications/" + app_id + "/commands";
+    var payload = [
+        {
+            name: "catness",
+            description: "finds out how cat someone is",
+            type: 1,
+            contexts: [0, 1, 2],
+            integration_types: [0, 1],
+            options: [
+                {
+                    name: "person",
+                    description: "who to check",
+                    type: 6
+                }
+            ]
+        },
+        {
+            name: "update",
+            description: "update command list (OWNER ONLY)",
+            type: 1,
+            contexts: [1],
+            integration_types: [1],
+        },
+        {
+            name: "meow",
+            description: "send a random meow",
+            type: 1,
+            contexts: [0, 1, 2],
+            integration_types: [0, 1],
+        },
+        {
+            name: "say",
+            description: "say something",
+            type: 1,
+            contexts: [0, 1, 2],
+            integration_types: [0, 1],
+            options: [{
+                name: "message",
+                type: 3,
+                description: "the message to say",
+                required: true
+            }]
+        },
+        {
+            name: "send",
+            description: "send something as the bot",
+            type: 1,
+            contexts: [0],
+            integration_types: [0],
+            options: [{
+                name: "message",
+                type: 3,
+                description: "the message to say",
+                required: true
+            }]
+        },
+        {
+            name: "ping",
+            description: "ping the bots servers",
+            type: 1,
+            contexts: [0, 1, 2],
+            integration_types: [0, 1],
+        },
+        {
+            name: "wipers",
+            description: "are windshield wipers on sale today?",
+            type: 1,
+            contexts: [0, 1, 2],
+            integration_types: [0, 1],
+        },
+    ]
+    const response = await fetch(url, {
+        method: "POST",
+        headers: head,
+        body: JSON.stringify(payload)
+    });
+    const text = await response.text();
+    const body = JSON.parse(text);
+    return body.status + " " + body.statusText;
 }
