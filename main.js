@@ -428,13 +428,36 @@ async function updateCommands() {
             contexts: [0, 1, 2],
             integration_types: [0, 1],
         },
-    ]
+        {
+            name: "octad",
+            options: [
+                {
+                    name: "generate",
+                    description: "generate octad puzzle",
+                    type: 1,
+                    contexts: [0, 1, 2],
+                    integration_types: [0, 1]
+                },
+                {
+                    name: "send",
+                    description: "send something as the bot",
+                    type: 1,
+                    contexts: [0],
+                    integration_types: [0],
+                    options: [{
+                        name: "puzzle",
+                        type: 3,
+                        description: "the puzzle to solve",
+                        required: true
+                    }]
+                }
+            ]
+        }
+    ];
     const response = await fetch(url, {
         method: "PUT",
         headers: head,
         body: JSON.stringify(payload)
     });
-    const text = await response.text();
-    const body = JSON.parse(text);
-    return body.status + " " + body.statusText;
+    return response.status + " " + response.statusText;
 }
