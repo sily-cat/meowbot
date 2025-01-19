@@ -94,6 +94,11 @@ Deno.serve(async (req) => {
             case "meow":
                 payload.data.content = meowText();
                 break;
+            case "update":
+                if (body.user.id == my_id) {
+                    payload.data.content = "updated commands";
+                }
+                break;
             case "wipers":
                 const current_date = new Date();
                 const random_seed = " " + current_date.getDate() + " " + current_date.getFullYear() + " " + current_date.getMonth();
