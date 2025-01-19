@@ -444,8 +444,8 @@ async function updateCommands() {
                     name: "solve",
                     description: "solve a puzzle",
                     type: 1,
-                    contexts: [0],
-                    integration_types: [0],
+                    contexts: [0, 1, 2],
+                    integration_types: [0, 1],
                     options: [{
                         name: "puzzle",
                         type: 3,
