@@ -430,6 +430,8 @@ async function updateCommands() {
         },
         {
             name: "octad",
+            description: "octad",
+            type: 2,
             options: [
                 {
                     name: "generate",
