@@ -148,12 +148,14 @@ Deno.serve(async (req) => {
                 ];
                 break;
             case "get avatar":
-                console.log(body.data);
                 const target_id = body.data.target_id;
-                const avatar_hash = body.data.resolved.users[target_id].id;
-                payload.data.content = api + "/avatars/" + target_id + "/" + avatar_hash;
+                const avatar_hash = body.data.resolved.users[target_id].avatar;
+                payload.data.content = api + "/avatars/" + target_id + "/" + avatar_hash + ".png";
                 break;
             case "get banner":
+                const target_id = body.data.target_id;
+                const banner_hash = body.data.resolved.users[target_id].banner;
+                payload.data.content = api + "/banners/" + target_id + "/" + banner_hash + ".png";
                 break;
             case "ping":
                 const curent_date = new Date();
