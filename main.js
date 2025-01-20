@@ -153,9 +153,9 @@ Deno.serve(async (req) => {
                 payload.data.content = api + "/avatars/" + target_id + "/" + avatar_hash + ".png";
                 break;
             case "get banner":
-                const target_id = body.data.target_id;
-                const banner_hash = body.data.resolved.users[target_id].banner;
-                payload.data.content = api + "/banners/" + target_id + "/" + banner_hash + ".png";
+                const targetid = body.data.target_id;
+                const banner_hash = body.data.resolved.users[targetid].banner;
+                payload.data.content = api + "/banners/" + targetid + "/" + banner_hash + ".png";
                 break;
             case "ping":
                 const curent_date = new Date();
