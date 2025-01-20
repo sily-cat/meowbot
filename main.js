@@ -1,3 +1,4 @@
+import { encodeBase64 } from "jsr:@std/encoding/base64";
 import { solveOctad } from "./octad.js";
 import { default as Alea, Mash } from "jsr:@iv/alea";
 import nacl from "https://esm.sh/tweetnacl@v1.0.3"; // i dont want to learn how authentication works
@@ -153,14 +154,35 @@ Deno.serve(async (req) => {
                 const avatar_hash = body.data.resolved.users[target_id].avatar;
                 payload.data.content = cdn + "/avatars/" + target_id + "/" + avatar_hash + ".png?size=4096";
                 break;
-            case "steal avatar":
+                /*
+            case "steal avatar": I AM STUPID
                 payload.data.flags = 64;
                 const starget_id = body.data.target_id;
                 const savatar_hash = body.data.resolved.users[starget_id].avatar;
                 const new_avatar = cdn + "/avatars/" + starget_id + "/" + savatar_hash + ".png?size=4096";
                 const old_avatar = cdn + "/avatars/" + body.user.id + "/" + body.user.avatar + ".png?size=4096";
                 payload.data.content = "old avatar:\n" + old_avatar;
-                break;
+                // get base64 of new avatar
+
+                var response = await fetch(url, {
+                    method: "GET",
+                    headers: head
+                });
+                const avatar_buffer = await response.arrayBuffer();
+                const avatar_base64 = encodeBase64(avatar_buffer);
+
+                // patch in new avatar
+
+                var url = api + "/users/" + channel + "/messages";
+                var payload = {
+                    avatar: avatar_base64
+                }
+                await fetch(url, {
+                    method: "PATCH",
+                    headers: head,
+                    body: JSON.stringify(payload)
+                });
+                break;*/
             case "get banner":
                 const targetid = body.data.target_id;
                 const banner_user = await get(api + "/users/" + targetid, head);
@@ -454,11 +476,11 @@ async function updateCommands() {
         {
             name: "get banner",
             type: 2
-        },
+        },/*
         {
             name: "steal avatar",
             type: 2
-        },
+        },*/
         {
             name: "octad",
             description: "octad",
