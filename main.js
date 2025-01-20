@@ -115,6 +115,23 @@ Deno.serve(async (req) => {
             case "say":
                 payload.data.content = body.data.options[0].value;
                 break;
+            case "gemini":
+                var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + Deno.env.get("GEMINI_API");
+                var prompt =  body.data.options[0].value;
+                var payload = {
+                    contents: [{
+                        parts: [{ prompt }]
+                    }]
+                }
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json"},
+                    body: JSON.stringify(payload)
+                });
+                console.log(response);
+                const body = JSON.parse(await response.text());
+                console.log(body);
+                break;
             case "send":
                 payload.data.content = "/send requires the `meowbot send` role";
                 payload.data.flags = 64; // ephemeral
@@ -155,35 +172,35 @@ Deno.serve(async (req) => {
                 const avatar_hash = body.data.resolved.users[target_id].avatar;
                 payload.data.content = cdn + "/avatars/" + target_id + "/" + avatar_hash + ".png?size=4096";
                 break;
-                /*
-            case "steal avatar": I AM STUPID
-                payload.data.flags = 64;
-                const starget_id = body.data.target_id;
-                const savatar_hash = body.data.resolved.users[starget_id].avatar;
-                const new_avatar = cdn + "/avatars/" + starget_id + "/" + savatar_hash + ".png?size=4096";
-                const old_avatar = cdn + "/avatars/" + body.user.id + "/" + body.user.avatar + ".png?size=4096";
-                payload.data.content = "old avatar:\n" + old_avatar;
-                // get base64 of new avatar
+            /*
+        case "steal avatar": I AM STUPID
+            payload.data.flags = 64;
+            const starget_id = body.data.target_id;
+            const savatar_hash = body.data.resolved.users[starget_id].avatar;
+            const new_avatar = cdn + "/avatars/" + starget_id + "/" + savatar_hash + ".png?size=4096";
+            const old_avatar = cdn + "/avatars/" + body.user.id + "/" + body.user.avatar + ".png?size=4096";
+            payload.data.content = "old avatar:\n" + old_avatar;
+            // get base64 of new avatar
 
-                var response = await fetch(url, {
-                    method: "GET",
-                    headers: head
-                });
-                const avatar_buffer = await response.arrayBuffer();
-                const avatar_base64 = encodeBase64(avatar_buffer);
+            var response = await fetch(url, {
+                method: "GET",
+                headers: head
+            });
+            const avatar_buffer = await response.arrayBuffer();
+            const avatar_base64 = encodeBase64(avatar_buffer);
 
-                // patch in new avatar
+            // patch in new avatar
 
-                var url = api + "/users/" + channel + "/messages";
-                var payload = {
-                    avatar: avatar_base64
-                }
-                await fetch(url, {
-                    method: "PATCH",
-                    headers: head,
-                    body: JSON.stringify(payload)
-                });
-                break;*/
+            var url = api + "/users/" + channel + "/messages";
+            var payload = {
+                avatar: avatar_base64
+            }
+            await fetch(url, {
+                method: "PATCH",
+                headers: head,
+                body: JSON.stringify(payload)
+            });
+            break;*/
             case "get banner":
                 const targetid = body.data.target_id;
                 const banner_user = await get(api + "/users/" + targetid, head);
@@ -440,6 +457,19 @@ async function updateCommands() {
                 name: "message",
                 type: 3,
                 description: "the message to say",
+                required: true
+            }]
+        },
+        {
+            name: "gemini",
+            description: "send a prompt to google's gemini chatbot",
+            type: 1,
+            contexts: [0, 1, 2],
+            integration_types: [0, 1],
+            options: [{
+                name: "prompt",
+                type: 3,
+                description: "the prompt",
                 required: true
             }]
         },
