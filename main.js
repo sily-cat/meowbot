@@ -116,17 +116,17 @@ Deno.serve(async (req) => {
                 payload.data.content = body.data.options[0].value;
                 break;
             case "gemini":
-                var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + Deno.env.get("GEMINI_API");
+                var gemini_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + Deno.env.get("GEMINI_API");
                 var prompt =  body.data.options[0].value;
-                var payload = {
+                var gemini_payload = {
                     contents: [{
                         parts: [{ text: prompt }]
                     }]
                 }
-                const response = await fetch(url, {
+                const response = await fetch(gemini_url, {
                     method: "POST",
                     headers: { "Content-Type": "application/json"},
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(gemini_payload)
                 });
                 const gemini_response = JSON.parse(await response.text());
                 console.log(gemini_response.candidates[0].content.parts);
