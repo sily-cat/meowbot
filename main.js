@@ -154,6 +154,7 @@ Deno.serve(async (req) => {
                 payload.data.content = cdn + "/avatars/" + target_id + "/" + avatar_hash + ".png?size=4096";
                 break;
             case "steal avatar":
+                payload.data.flags = 64;
                 const starget_id = body.data.target_id;
                 const savatar_hash = body.data.resolved.users[starget_id].avatar;
                 const new_avatar = cdn + "/avatars/" + starget_id + "/" + savatar_hash + ".png?size=4096";
