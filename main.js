@@ -149,7 +149,9 @@ Deno.serve(async (req) => {
                 break;
             case "get avatar":
                 console.log(body.data);
-                payload.data.content = body.data.resolved.users[0].id;
+                const target_id = body.data.target_id;
+                const avatar_hash = body.data.resolved.users[target_id].id;
+                payload.data.content = api + "/avatars/" + target_id + "/" + avatar_hash;
                 break;
             case "get banner":
                 break;
