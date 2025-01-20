@@ -128,9 +128,9 @@ Deno.serve(async (req) => {
                     headers: { "Content-Type": "application/json"},
                     body: JSON.stringify(payload)
                 });
-                console.log(response);
-                const geminiresponse = JSON.parse(await response.text());
-                console.log(geminiresponse);
+                const gemini_response = JSON.parse(await response.text());
+                console.log(gemini_response.candidates[0].content.parts);
+                payload.data.content = gemini_response.candidates[0].content.parts[0].text;
                 break;
             case "send":
                 payload.data.content = "/send requires the `meowbot send` role";
