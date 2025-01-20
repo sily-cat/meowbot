@@ -4,6 +4,7 @@ import nacl from "https://esm.sh/tweetnacl@v1.0.3"; // i dont want to learn how 
 import { Buffer } from "node:buffer"; // needs this for some reason? idk i copied the authentication code from discord
 const public_key = Deno.env.get("PUBLIC_KEY");
 const api = "https://discord.com/api/v10";
+const cdn = "https://cdn.discordapp.com"
 const token = Deno.env.get("BOT_TOKEN");
 const app_id = Deno.env.get("APP_ID");
 const my_id = Deno.env.get("MY_ID"); // for future use, commands only usable by me
@@ -150,12 +151,12 @@ Deno.serve(async (req) => {
             case "get avatar":
                 const target_id = body.data.target_id;
                 const avatar_hash = body.data.resolved.users[target_id].avatar;
-                payload.data.content = api + "/avatars/" + target_id + "/" + avatar_hash + ".png";
+                payload.data.content = cdn + "/avatars/" + target_id + "/" + avatar_hash + ".png";
                 break;
             case "get banner":
                 const targetid = body.data.target_id;
                 const banner_hash = body.data.resolved.users[targetid].banner;
-                payload.data.content = api + "/banners/" + targetid + "/" + banner_hash + ".png";
+                payload.data.content = cdn + "/banners/" + targetid + "/" + banner_hash + ".png";
                 break;
             case "ping":
                 const curent_date = new Date();
