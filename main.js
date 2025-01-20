@@ -147,6 +147,11 @@ Deno.serve(async (req) => {
                     }
                 ];
                 break;
+            case "get avatar":
+                payload.data.content = body.data.resolved.users[0].id;
+                break;
+            case "get banner":
+                break;
             case "ping":
                 const curent_date = new Date();
                 const radom_seed = " " + curent_date.getDate() + " " + curent_date.getFullYear() + " " + curent_date.getMonth();
@@ -427,6 +432,14 @@ async function updateCommands() {
             type: 1,
             contexts: [0, 1, 2],
             integration_types: [0, 1],
+        },
+        {
+            name: "get avatar",
+            type: 2
+        },
+        {
+            name: "get banner",
+            type: 2
         },
         {
             name: "octad",
