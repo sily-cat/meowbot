@@ -148,6 +148,7 @@ Deno.serve(async (req) => {
                 ];
                 break;
             case "get avatar":
+                console.log(body.data);
                 payload.data.content = body.data.resolved.users[0].id;
                 break;
             case "get banner":
