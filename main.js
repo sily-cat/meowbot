@@ -120,7 +120,7 @@ Deno.serve(async (req) => {
                 var prompt =  body.data.options[0].value;
                 var payload = {
                     contents: [{
-                        parts: [{ prompt }]
+                        parts: [{ text: prompt }]
                     }]
                 }
                 const response = await fetch(url, {
