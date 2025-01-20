@@ -92,6 +92,7 @@ Deno.serve(async (req) => {
             type: 4,
             data: {}
         }
+        console.log(body.data.id);
         switch (body.data.name) {
             case "meow":
                 payload.data.content = meowText();
