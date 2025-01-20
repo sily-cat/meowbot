@@ -472,11 +472,15 @@ async function updateCommands() {
         },
         {
             name: "get avatar",
-            type: 2
+            type: 2,
+            contexts: [0, 1, 2],
+            integration_types: [0, 1],
         },
         {
             name: "get banner",
-            type: 2
+            type: 2,
+            contexts: [0, 1, 2],
+            integration_types: [0, 1],
         },/*
         {
             name: "steal avatar",
