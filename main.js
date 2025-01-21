@@ -558,7 +558,7 @@ async function gemini(prompt) {
 
 async function followup(handle, body) {
     const url = api + "/webhooks/" + app_id + "/" + body.token + "/messages/@original";
-    var payload = handle;
+    var payload = { content: handle };
     const response = await fetch(url, { // patch request to remove the old button
         method: "PATCH",
         headers: head,
