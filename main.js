@@ -116,21 +116,8 @@ Deno.serve(async (req) => {
                 payload.data.content = body.data.options[0].value;
                 break;
             case "gemini":
-                var gemini_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + Deno.env.get("GEMINI_API");
-                var prompt =  body.data.options[0].value;
-                var gemini_payload = {
-                    contents: [{
-                        parts: [{ text: prompt }]
-                    }]
-                }
-                const response = await fetch(gemini_url, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json"},
-                    body: JSON.stringify(gemini_payload)
-                });
-                const gemini_response = JSON.parse(await response.text());
-                console.log(gemini_response.candidates[0].content.parts);
-                payload.data.content = gemini_response.candidates[0].content.parts[0].text;
+                payload.data.content = "loading...";
+                followup(await gemini(body.data.options[0].value), body)
                 break;
             case "send":
                 payload.data.content = "/send requires the `meowbot send` role";
@@ -550,4 +537,32 @@ async function updateCommands() {
         body: JSON.stringify(payload)
     });
     return response.status + " " + response.statusText;
+}
+
+async function gemini(prompt) {
+    var gemini_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + Deno.env.get("GEMINI_API");
+    var gemini_payload = {
+        contents: [{
+            parts: [{ text: prompt }]
+        }]
+    }
+    const response = await fetch(gemini_url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(gemini_payload)
+    });
+    const gemini_response = JSON.parse(await response.text());
+    //console.log(gemini_response.candidates[0].content.parts);
+    return gemini_response.candidates[0].content.parts[0].text;
+}
+
+async function followup(handle, body) {
+    const url = api + "/webhooks/" + app_id + "/" + body.token + "/messages/@original";
+    var payload = await handle();
+    const response = await fetch(url, { // patch request to remove the old button
+        method: "PATCH",
+        headers: head,
+        body: JSON.stringify(payload)
+    });
+    console.log(response);
 }
