@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
                 break;
             case "gemini":
                 payload.data.content = "loading...";
-                followup(await gemini(body.data.options[0].value), body)
+                followup(gemini, body)
                 break;
             case "send":
                 payload.data.content = "/send requires the `meowbot send` role";
@@ -558,7 +558,8 @@ async function gemini(prompt) {
 
 async function followup(handle, body) {
     const url = api + "/webhooks/" + app_id + "/" + body.token + "/messages/@original";
-    var payload = { content: handle };
+    const cont = await handle(body.data.options[0].value)
+    var payload = { content: cont };
     const response = await fetch(url, { // patch request to remove the old button
         method: "PATCH",
         headers: head,
