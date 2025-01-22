@@ -558,7 +558,7 @@ async function gemini(prompt) {
 
 async function followup(handle, body) {
     const url = api + "/webhooks/" + app_id + "/" + body.token + "/messages/@original";
-    const cont = await handle(body.data.options[0].value)
+    var cont = await handle(body.data.options[0].value)
     if (cont.length > 2000) {
         cont = cont.slice(0, 1999);
     }
