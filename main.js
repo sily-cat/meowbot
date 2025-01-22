@@ -574,7 +574,7 @@ async function gemini(prompt) {
     return gemini_response.candidates[0].content.parts[0].text;
 }
 
-async function followup(handle, body, input) {
+async function editHandler(handle, body, input) {
     const url = api + "/webhooks/" + app_id + "/" + body.token + "/messages/@original";
     var cont = await handle(input);
     if (cont.length > 2000) {
