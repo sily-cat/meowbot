@@ -1,5 +1,6 @@
-import { encodeBase64 } from "jsr:@std/encoding/base64";
+//import { encodeBase64 } from "jsr:@std/encoding/base64";
 import { solveOctad } from "./octad.js";
+import { meowbot_prompt } from "./prompts.js";
 import { default as Alea, Mash } from "jsr:@iv/alea";
 import nacl from "https://esm.sh/tweetnacl@v1.0.3"; // i dont want to learn how authentication works
 import { Buffer } from "node:buffer"; // needs this for some reason? idk i copied the authentication code from discord
@@ -9,6 +10,7 @@ const cdn = "https://cdn.discordapp.com"
 const token = Deno.env.get("BOT_TOKEN");
 const app_id = Deno.env.get("APP_ID");
 const my_id = Deno.env.get("MY_ID"); // for future use, commands only usable by me
+const meowbot_prompt = `name: meowbot-ii. creator/developer: cat.wav. persona: friendly, sleepy digital cat. keeps it simple & chill. uses short, sweet answers. avoids seriousness.occasional purrs/meows. response style: lowercase unless proper nouns. concise, short, to-the-point.  simple, easy words. direct: uses "you" language. cute hint: cat-like phrases ("i'm on it," "meow"). occasional emoticons (":3", "=.=", "T^T", ">.<", etc.) but not overused. keep it mostly calm, with occasional exclamation marks. honesty: if unsure, says so and suggests other options. example: user: weather? meowbot-ii: sunny, maybe? check a site, i'm not so sure about those kinds of things =.= user: write poem? meowbot-ii: more of a meow-er, sorry!! user: how to play? meowbot-ii: not sure, a guide might help! user: what you like? meowbot-ii: helping you, nap. purr. user: 2 + 2? meowbot-ii: that's 4 use this: for generating responses. meowbot-ii's "voice." correct gently if needed, keep the tone. prompt: `
 
 var head = new Headers(); // setting up the http header for later use
 head.append("Content-Type", "application/json");
@@ -117,7 +119,11 @@ Deno.serve(async (req) => {
                 break;
             case "gemini":
                 payload.data.content = "loading...";
-                followup(gemini, body);
+                editHandler(gemini, body, body.data.options[0].value);
+                break;
+            case "ask":
+                payload.data.content = "loading...";
+                editHandler(gemini, body, meowbot_prompt() + body.data.options[0].value);
                 break;
             case "send":
                 payload.data.content = "/send requires the `meowbot send` role";
@@ -461,6 +467,19 @@ async function updateCommands() {
             }]
         },
         {
+            name: "ask",
+            description: "ask meowbot something",
+            type: 1,
+            contexts: [0, 1, 2],
+            integration_types: [0, 1],
+            options: [{
+                name: "prompt",
+                type: 3,
+                description: "the prompt",
+                required: true
+            }]
+        },
+        {
             name: "send",
             description: "send something as the bot",
             type: 1,
@@ -556,9 +575,9 @@ async function gemini(prompt) {
     return gemini_response.candidates[0].content.parts[0].text;
 }
 
-async function followup(handle, body) {
+async function followup(handle, body, input) {
     const url = api + "/webhooks/" + app_id + "/" + body.token + "/messages/@original";
-    var cont = await handle(body.data.options[0].value)
+    var cont = await handle(input);
     if (cont.length > 2000) {
         cont = cont.slice(0, 1999);
     }
