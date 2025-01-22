@@ -122,7 +122,7 @@ Deno.serve(async (req) => {
                 break;
             case "ask":
                 //payload.data.content = "loading...";
-                payload.data.type = 5;
+                payload.type = 5;
                 editHandler(gemini, body, meowbot_prompt() + body.data.options[0].value);
                 //var return_ask = await gemini(meowbot_prompt() + body.data.options[0].value);
                 //if (return_ask.length > 2000) {
