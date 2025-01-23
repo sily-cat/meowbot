@@ -393,7 +393,7 @@ Deno.serve(async (req) => {
             data: {}
         }
         switch (body.data.custom_id) {
-            case "ask_input":
+            case "ask_modal":
                 var username;
                 payload.type = 5;
                 if (Object.keys(body).includes("user")) {
