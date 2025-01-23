@@ -343,6 +343,7 @@ Deno.serve(async (req) => {
                     ]
                 }]
                 payload.type = 9;
+                break;
                 //editHandler(gemini, body, meowbot_prompt(username, body.data.components[0].components[0].value, ask_context), ask_components);
             case "anothercat": // clicked the another button!!
                 var url = api + "/channels/" + body.message.channel_id + "/messages/" + body.message.id;
