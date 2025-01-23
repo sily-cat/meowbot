@@ -349,6 +349,7 @@ Deno.serve(async (req) => {
                             {
                                 "title": "+",
                                 "custom_id": "ask_modal",
+                                "type": 2,
                                 "components": [{
                                     "type": 1,
                                     "components": [{
