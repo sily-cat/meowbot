@@ -316,9 +316,9 @@ Deno.serve(async (req) => {
         switch (body.data.custom_id) {
             case "ask_button":
                 var ask_context = body.message.content;
-                payload.title = "ask";
-                payload.custom_id = "ask_modal";
-                payload.components = [{
+                payload.data.title = "ask";
+                payload.data.custom_id = "ask_modal";
+                payload.data.components = [{
                     "type": 1,
                     "components": [
                         {
