@@ -318,33 +318,30 @@ Deno.serve(async (req) => {
                 var ask_context = body.message.content;
                 payload.data.title = "ask";
                 payload.data.custom_id = "ask_modal";
-                payload.data.components = [{
-                    "type": 1,
-                    "components": [
-                        {
-                            "type": 4,
-                            "custom_id": "ask_input",
-                            "label": "followup?",
-                            "style": 2,
-                            "min_length": 1,
-                            "max_length": 4000,
-                            "required": true
-                        },
-                        {
-                            "type": 4,
-                            "custom_id": "ask_context",
-                            "label": "(original response, do not touch)",
-                            "style": 1,
-                            "min_length": 1,
-                            "max_length": 4000,
-                            "value": ask_context,
-                            "required": true
-                        }
-                    ]
-                }]
+                payload.data.components = [
+                    {
+                        "type": 4,
+                        "custom_id": "ask_input",
+                        "label": "followup?",
+                        "style": 2,
+                        "min_length": 1,
+                        "max_length": 4000,
+                        "required": true
+                    },
+                    {
+                        "type": 4,
+                        "custom_id": "ask_context",
+                        "label": "(original response, do not touch)",
+                        "style": 1,
+                        "min_length": 1,
+                        "max_length": 4000,
+                        "value": ask_context,
+                        "required": true
+                    }
+                ];
                 payload.type = 9;
                 break;
-                //editHandler(gemini, body, meowbot_prompt(username, body.data.components[0].components[0].value, ask_context), ask_components);
+            //editHandler(gemini, body, meowbot_prompt(username, body.data.components[0].components[0].value, ask_context), ask_components);
             case "anothercat": // clicked the another button!!
                 var url = api + "/channels/" + body.message.channel_id + "/messages/" + body.message.id;
                 console.log(url);
