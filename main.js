@@ -121,8 +121,48 @@ Deno.serve(async (req) => {
                 editHandler(gemini, body, body.data.options[0].value);
                 break;
             case "ask":
+                var username;
                 payload.type = 5;
-                editHandler(gemini, body, meowbot_prompt() + body.data.options[0].value);
+                if (Object.keys(body).includes("user")) {
+                    if (body.user.global_name == null) {
+                        username = body.user.username;
+                    } else {
+                        username = body.user.global_name;
+                    }
+                } else {
+                    if (body.member.nick !== null) {
+                        username = body.member.nick;
+                    } else if (body.member.user.global_name == null) {
+                        username = body.member.user.username;
+                    } else {
+                        username = body.member.user.global_name;
+                    }
+                }
+                var ask_components = [
+                    {
+                        "type": 1,
+                        "components": [
+                            {
+                                "title": "+",
+                                "custom_id": "ask_modal",
+                                "components": [{
+                                    "type": 1,
+                                    "components": [{
+                                        "type": 4,
+                                        "custom_id": "ask_input",
+                                        "label": "followup?",
+                                        "style": 2,
+                                        "min_length": 1,
+                                        "max_length": 4000,
+                                        "placeholder": "",
+                                        "required": true
+                                    }]
+                                }]
+                            }
+                        ]
+                    }
+                ]
+                editHandler(gemini, body, meowbot_prompt(username, body.data.options[0].value), ask_components);
                 break;
             case "send":
                 payload.data.content = "/send requires the `meowbot send` role";
@@ -284,6 +324,50 @@ Deno.serve(async (req) => {
             data: {}
         }
         switch (body.data.custom_id) {
+            case "ask_modal":
+                var username;
+                payload.type = 5;
+                if (Object.keys(body).includes("user")) {
+                    if (body.user.global_name == null) {
+                        username = body.user.username;
+                    } else {
+                        username = body.user.global_name;
+                    }
+                } else {
+                    if (body.member.nick !== null) {
+                        username = body.member.nick;
+                    } else if (body.member.user.global_name == null) {
+                        username = body.member.user.username;
+                    } else {
+                        username = body.member.user.global_name;
+                    }
+                }
+                var ask_components = [
+                    {
+                        "type": 1,
+                        "components": [
+                            {
+                                "title": "+",
+                                "custom_id": "ask_modal",
+                                "components": [{
+                                    "type": 1,
+                                    "components": [{
+                                        "type": 4,
+                                        "custom_id": "ask_input",
+                                        "label": "followup?",
+                                        "style": 2,
+                                        "min_length": 1,
+                                        "max_length": 4000,
+                                        "placeholder": "",
+                                        "required": true
+                                    }]
+                                }]
+                            }
+                        ]
+                    }
+                ]
+                var ask_context = body.message.content;
+                editHandler(gemini, body, meowbot_prompt(username, body.data.components[0].components[0].value, ask_context), ask_components);
             case "anothercat": // clicked the another button!!
                 var url = api + "/channels/" + body.message.channel_id + "/messages/" + body.message.id;
                 console.log(url);
@@ -574,13 +658,16 @@ async function gemini(prompt) {
     return gemini_response.candidates[0].content.parts[0].text;
 }
 
-async function editHandler(handle, body, input) {
+async function editHandler(handle, body, input, components = false) {
     const url = api + "/webhooks/" + app_id + "/" + body.token + "/messages/@original";
     var cont = await handle(input);
     if (cont.length > 2000) {
         cont = cont.slice(0, 1999);
     }
     var payload = { content: cont };
+    if (components) {
+        payload.components = components;
+    }
     const response = await fetch(url, {
         method: "PATCH",
         headers: head,
