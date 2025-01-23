@@ -314,27 +314,6 @@ Deno.serve(async (req) => {
             data: {}
         }
         switch (body.data.custom_id) {
-            case "ask_input":
-                var username;
-                payload.type = 5;
-                if (Object.keys(body).includes("user")) {
-                    if (body.user.global_name == null) {
-                        username = body.user.username;
-                    } else {
-                        username = body.user.global_name;
-                    }
-                } else {
-                    if (body.member.nick !== null) {
-                        username = body.member.nick;
-                    } else if (body.member.user.global_name == null) {
-                        username = body.member.user.username;
-                    } else {
-                        username = body.member.user.global_name;
-                    }
-                }
-                var ask_context = body.data.components[1].components[0].value;
-                editHandler(gemini, body, meowbot_prompt(username, body.data.components[0].components[0].value, ask_context));
-                break;
             case "ask_button":
                 var ask_context = body.message.content;
                 payload.data.title = "ask";
@@ -395,6 +374,45 @@ Deno.serve(async (req) => {
                         ]
                     }
                 ];
+                break;
+        }
+        return new Response( // send!!
+            JSON.stringify(payload),
+            {
+                status: 200,
+                headers: {
+                    "content-type": "application/json"
+                }
+            });
+    }
+
+    if (body.type == 5) {
+        console.log("modal submit request");
+        var payload = {
+            type: 4,
+            data: {}
+        }
+        switch (body.data.custom_id) {
+            case "ask_input":
+                var username;
+                payload.type = 5;
+                if (Object.keys(body).includes("user")) {
+                    if (body.user.global_name == null) {
+                        username = body.user.username;
+                    } else {
+                        username = body.user.global_name;
+                    }
+                } else {
+                    if (body.member.nick !== null) {
+                        username = body.member.nick;
+                    } else if (body.member.user.global_name == null) {
+                        username = body.member.user.username;
+                    } else {
+                        username = body.member.user.global_name;
+                    }
+                }
+                var ask_context = body.data.components[1].components[0].value;
+                editHandler(gemini, body, meowbot_prompt(username, body.data.components[0].components[0].value, ask_context));
                 break;
         }
         return new Response( // send!!
