@@ -545,6 +545,13 @@ async function updateCommands() {
             integration_types: [0, 1],
         },
         {
+            name: "cat",
+            description: "send a cat image from thecatapi",
+            type: 1,
+            contexts: [0, 1, 2],
+            integration_types: [0, 1],
+        },
+        {
             name: "say",
             description: "say something",
             type: 1,
