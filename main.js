@@ -189,6 +189,9 @@ Deno.serve(async (req) => {
                     }
                 ];
                 break;
+            case "hungry":
+                payload.data.content = "[hungry](https://cdn.discordapp.com/attachments/1328618249042268171/1337508935963377734/horse-min.gif)";
+                break;
             case "get avatar":
                 const target_id = body.data.target_id;
                 const avatar_hash = body.data.resolved.users[target_id].avatar;
@@ -547,6 +550,13 @@ async function updateCommands() {
         {
             name: "cat",
             description: "send a cat image from thecatapi",
+            type: 1,
+            contexts: [0, 1, 2],
+            integration_types: [0, 1],
+        },
+        {
+            name: "hungry",
+            description: "how hungry...",
             type: 1,
             contexts: [0, 1, 2],
             integration_types: [0, 1],
