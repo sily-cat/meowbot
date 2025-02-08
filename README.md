@@ -4,7 +4,7 @@ a discord bot written in js (using deno)
 
 kinda a programming exercise, i worked directly with the discord api
 
-https://meowbot.deno.dev
+https://meowbot-ii.deno.dev
 
 
 
