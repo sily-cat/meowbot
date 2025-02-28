@@ -18,6 +18,6 @@ APP_ID - your discord bot's id
 
 PUBLIC_KEY - your discord bot's public key
 
-MY_ID - your discord user's id (not in use yet)
+MY_ID - your discord user's id
 
 CAT_API - token from https://thecatapi.com/

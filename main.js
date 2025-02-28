@@ -172,6 +172,10 @@ Deno.serve(async (req) => {
                     }
                 }
                 break;
+            case "getmessages":
+            	payload.data.flags = 64;
+            	payload.data.content = await getMessages(body.channel_id, parseInt(body.data.options[0].value));
+            	break;
             case "cat":
                 var cat = await getCat();
                 payload.data.content = "[cat](" + cat + ")";
@@ -470,19 +474,6 @@ function meowText() {
     return meows[getRandomInt(meows.length - 1)];
 }
 
-async function sendMessage(message, channel) {
-    var url = api + "/channels/" + channel + "/messages";
-    var payload = {
-        content: message
-    }
-    await fetch(url, {
-        method: "POST",
-        headers: head,
-        body: JSON.stringify(payload)
-    });
-    console.log("sent message");
-}
-
 async function getCat() { // might switch to cataas as it doesnt have a limit
     const url = "https://api.thecatapi.com/v1/images/search";
     const header = { 'x-api-key': Deno.env.get("CAT_API") }
@@ -614,6 +605,19 @@ async function updateCommands() {
             }]
         },
         {
+                name: "getmessages",
+                description: "get the last n messages sent (debug purposes)",
+                type: 1,
+                contexts: [0],
+                integration_types: [0],
+                options: [{
+                    name: "number",
+                    type: 3,
+                    description: "number of messages to get",
+                    required: true
+                }]
+            },
+        {
             name: "ping",
             description: "ping the bots servers",
             type: 1,
@@ -712,4 +716,23 @@ async function editHandler(handle, body, input, components = false) {
         body: JSON.stringify(payload)
     });
     console.log(response);
+}
+
+async function getMessages(channel, num=50) {
+	const url = api + "/channels/" + channel + "/messages" + "?limit=" + num;
+	const messages_response = await get(url, head);
+	const array = JSON.parse(await messages_response.text());
+}
+
+async function sendMessage(message, channel) {
+    var url = api + "/channels/" + channel + "/messages";
+    var payload = {
+        content: message
+    }
+    await fetch(url, {
+        method: "POST",
+        headers: head,
+        body: JSON.stringify(payload)
+    });
+    console.log("sent message");
 }
