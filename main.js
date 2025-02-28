@@ -738,15 +738,18 @@ async function editHandler(handle, body, input, components = false) {
     console.log(response);
 }
 
-async function getMessages(channel, num=50) {
+async function getMessages(channel, num=50, separator="\n") {
 	const url = api + "/channels/" + channel + "/messages" + "?limit=" + num;
 	const messages_array = await get(url, head);
 	var response_array = [];
 	for (const e of messages_array) {
-		response_array.push(`${e.author.username}: ${e.content}`);
-		console.log(e.interaction_metadata);
+		if (e.content !== "") {
+			response_array.push(`${e.author.username}: ${e.content}`);
+		} else {
+			response_array.push(`${e.author.username}: [NO ACCESS]`);
+		}
 	}
-	return response_array.join("\n");
+	return response_array.join(separator);
 }
 
 async function sendMessage(message, channel) {
