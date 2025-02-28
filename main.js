@@ -595,7 +595,7 @@ async function updateCommands() {
             name: "send",
             description: "send something as the bot",
             type: 1,
-            contexts: [0],
+            contexts: [1],
             integration_types: [0],
             options: [{
                 name: "message",
@@ -605,18 +605,18 @@ async function updateCommands() {
             }]
         },
         {
-                name: "getmessages",
-                description: "get the last n messages sent (debug purposes)",
-                type: 1,
-                contexts: [0],
-                integration_types: [0],
-                options: [{
-                    name: "number",
-                    type: 3,
-                    description: "number of messages to get",
-                    required: true
-                }]
-            },
+            name: "getmessages",
+            description: "get the last n messages sent (debug purposes)",
+            type: 1,
+            contexts: [0],
+            integration_types: [0],
+            options: [{
+                name: "number",
+                type: 3,
+                description: "number of messages to get",
+                required: true
+            }]
+        },
         {
             name: "ping",
             description: "ping the bots servers",
@@ -722,11 +722,11 @@ async function getMessages(channel, num=50) {
 	const url = api + "/channels/" + channel + "/messages" + "?limit=" + num;
 	const messages_array = await get(url, head);
 	var response_array = [];
-	console.log(messages_array);
+	console.log(messages_array.interaction_metadata);
 	for (const e of messages_array) {
-		response_array.push(`${e.author}: ${e.content}`);
+		response_array.push(`${e.author.username}: ${e.content}`);
 	}
-	return response_array.join("\n\n");
+	return response_array.join("\n");
 }
 
 async function sendMessage(message, channel) {
