@@ -138,7 +138,7 @@ Deno.serve(async (req) => {
                         username = body.member.user.global_name;
                     }
                 }
-                editHandler(gemini, body, meowbot_prompt(username, body.data.options[0].value, await getMessages(body.channel_id, 50), true));
+                editHandler(gemini, body, meowbot_prompt(username, body.data.options[0].value, await getMessages(body.channel_id, 20), true));
                 break;
             case "askold":
                 var username;
