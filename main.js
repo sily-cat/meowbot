@@ -720,8 +720,13 @@ async function editHandler(handle, body, input, components = false) {
 
 async function getMessages(channel, num=50) {
 	const url = api + "/channels/" + channel + "/messages" + "?limit=" + num;
-	const messages_response = await get(url, head);
-	const array = JSON.parse(await messages_response.text());
+	const messages_array = await get(url, head);
+	var response_array = [];
+	console.log(messages_array);
+	for (const e of messages_array) {
+		response_array.push(`${e.author}: ${e.content}`);
+	}
+	return response_array.join("\n\n");
 }
 
 async function sendMessage(message, channel) {
