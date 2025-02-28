@@ -139,7 +139,7 @@ Deno.serve(async (req) => {
                     }
                 }
                 var ask_components = [
-                    {
+                    /*{
                         "type": 1,
                         "components": [
                             {
@@ -150,7 +150,7 @@ Deno.serve(async (req) => {
                             }
                         ]
 
-                    }
+                    }*/
                 ]
                 editHandler(gemini, body, meowbot_prompt(username, body.data.options[0].value), ask_components);
                 break;
@@ -722,9 +722,9 @@ async function getMessages(channel, num=50) {
 	const url = api + "/channels/" + channel + "/messages" + "?limit=" + num;
 	const messages_array = await get(url, head);
 	var response_array = [];
-	console.log(messages_array.interaction_metadata);
 	for (const e of messages_array) {
 		response_array.push(`${e.author.username}: ${e.content}`);
+		console.log(e.interaction_metadata);
 	}
 	return response_array.join("\n");
 }
