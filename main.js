@@ -138,6 +138,26 @@ Deno.serve(async (req) => {
                         username = body.member.user.global_name;
                     }
                 }
+                editHandler(gemini, body, meowbot_prompt(username, body.data.options[0].value, await getMessages(body.channel_id, 50), true));
+                break;
+            case "askold":
+                var username;
+                payload.type = 5;
+                if (Object.keys(body).includes("user")) {
+                    if (body.user.global_name == null) {
+                        username = body.user.username;
+                    } else {
+                        username = body.user.global_name;
+                    }
+                } else {
+                    if (body.member.nick !== null) {
+                        username = body.member.nick;
+                    } else if (body.member.user.global_name == null) {
+                        username = body.member.user.username;
+                    } else {
+                        username = body.member.user.global_name;
+                    }
+                }
                 var ask_components = [
                     /*{
                         "type": 1,
