@@ -595,7 +595,7 @@ async function updateCommands() {
             name: "send",
             description: "send something as the bot",
             type: 1,
-            contexts: [1],
+            contexts: [0],
             integration_types: [0],
             options: [{
                 name: "message",
@@ -608,8 +608,8 @@ async function updateCommands() {
             name: "getmessages",
             description: "get the last n messages sent (debug purposes)",
             type: 1,
-            contexts: [0],
-            integration_types: [0],
+            contexts: [1],
+            integration_types: [0, 1],
             options: [{
                 name: "number",
                 type: 3,
