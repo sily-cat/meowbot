@@ -282,8 +282,13 @@ Deno.serve(async (req) => {
                         output_octad.splice(12, 0, " ");
                         output_octad.splice(8, 0, " ");
                         output_octad.splice(4, 0, " ");
-                        console.log(body.data.options[0].options[1].value);
-                        payload.data.content = output_octad.join("");
+                        if(body.data.options[0].options.length > 1) {
+                            if (body.data.options[0].options[1] == false) {
+                                payload.data.content = output_octad.join("");
+                                break;
+                            }
+                        }
+                        payload.data.content = "||" + output_octad.join("") + "||";
                         break;
                 }
                 break;
