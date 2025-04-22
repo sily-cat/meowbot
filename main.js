@@ -282,6 +282,7 @@ Deno.serve(async (req) => {
                         output_octad.splice(12, 0, " ");
                         output_octad.splice(8, 0, " ");
                         output_octad.splice(4, 0, " ");
+                        console.log(body.data.options[0].options[1].value);
                         payload.data.content = output_octad.join("");
                         break;
                 }
@@ -516,7 +517,7 @@ function octadPuzzle() {
     var i = 0;
     var possible_index;
     while (i < 5) {
-        possible_index = getRandomInt(puzzle.length - 1);
+        possible_index = getRandomInt(puzzle.length);
         if (puzzle[possible_index] == "•") {
             puzzle[possible_index] = 1;
             i++;
@@ -690,6 +691,12 @@ async function updateCommands() {
                         type: 3,
                         description: "the puzzle to solve",
                         required: true
+                    },
+                    {
+                        name: "spoiler",
+                        type: 5,
+                        description: "output answer as spoiler? (default true)",
+                        required: false
                     }]
                 }
             ]
