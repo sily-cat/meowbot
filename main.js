@@ -115,6 +115,7 @@ Deno.serve(async (req) => {
       case "shop":
         payload.data.content = generateShopText();
         payload.data.components = generateShopComponents();
+        break;
       case "say":
         payload.data.content = body.data.options[0].value;
         break;
