@@ -423,6 +423,7 @@ Deno.serve(async (req) => {
         ];
         break;
       case "buy_yes":
+        var shop_list = shopList();
         var url =
           api +
           "/channels/" +
@@ -433,9 +434,11 @@ Deno.serve(async (req) => {
           // patch request to remove the old buttons
           method: "PATCH",
           headers: head,
-          body: JSON.stringify({ components: [] }),
+          body: JSON.stringify({
+            content: `you got ${shop_list[selected_value][0]}!`,
+            components: [],
+          }),
         });
-        payload.data.content = `you got ${shop_list[selected_value][0]}!`;
         break;
       case "buy_no":
         var url =
