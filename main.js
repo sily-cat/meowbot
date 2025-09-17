@@ -89,6 +89,7 @@ Deno.serve(async (req) => {
 
   if (body.type == 2) {
     console.log("command request");
+    var meowbotdata_allowed = false;
     var payload = {
       type: 4,
       data: {},
@@ -221,6 +222,60 @@ Deno.serve(async (req) => {
           parseInt(body.data.options[0].value),
         );
         break;
+      case "daily":
+        var user_id;
+        if (Object.keys(body).includes("user")) {
+          user_id = body.user.id;
+        } else {
+          user_id = body.member.user.id;
+        }
+        var url = api + "/users/@me/channels";
+        var dm_response = await fetch(url, {
+          // patch request to remove the old button
+          method: "POST",
+          headers: head,
+          body: JSON.stringify({ recipient_id: user_id }),
+        });
+        var dm_response_text = await dm_response.text();
+        var dm_response_json = JSON.parse(dm_response_text);
+        var dm_channel = dm_response_json.id;
+        var old_messages = await getMessages(dm_channel, 5, "", true, true);
+        var meowbot_data = null;
+        var data_message_id;
+        for (const e of old_messages) {
+          if (e[2] == app_id && e[0].substring(0, 13) == "MEOWBOTDATA&&") {
+            meowbot_data = e[0];
+            data_message_id = e[1];
+          }
+        }
+        var new_user = false;
+        if (meowbot_data == null) {
+          meowbot_data = "MEOWBOTDATA&&0&&1 1 1";
+          new_user = true;
+        }
+        var meowbot_data_list = meowbot_data.split("&&");
+        if (meowbot_data_list[2] != getDateTime() || user_id == my_id) {
+          payload.data.content = "you got **100** cat dollars!";
+          meowbot_data_list[1] = parseInt(meowbot_data_list[1]) + 100;
+        } else {
+          payload.data.content =
+            "already did today, come back tomorrow for more cat dollars";
+        }
+        meowbot_data = meowbot_data_list.join("&&");
+        if (!new_user) {
+          var url =
+            api + "/channels/" + dm_channel + "/messages/" + data_message_id;
+          var thing = await fetch(url, {
+            method: "PATCH",
+            headers: head,
+            body: JSON.stringify({
+              content: meowbot_data,
+            }),
+          });
+        } else {
+          await sendMessage(meowbot_data, dm_channel);
+        }
+        break;
       case "cat":
         var cat = await getCat();
         payload.data.content = "[cat](" + cat + ")";
@@ -290,19 +345,12 @@ Deno.serve(async (req) => {
           ".png?size=4096";
         break;
       case "ping":
-        const curent_date = new Date();
-        const radom_seed =
-          " " +
-          curent_date.getDate() +
-          " " +
-          curent_date.getFullYear() +
-          " " +
-          curent_date.getMonth();
+        const date_time = getDateTime();
         payload.data.content =
           "pong!\nregion: " +
           Deno.env.get("DENO_REGION") +
           "\ndatetime: " +
-          radom_seed;
+          date_time;
         break;
       case "octad":
         switch (body.data.options[0].name) {
@@ -383,6 +431,11 @@ Deno.serve(async (req) => {
         }
         break;
     }
+    if (!meowbotdata_allowed) {
+      payload.data.content = payload.data.content
+        .split("MEOWBOTDATA")
+        .join("MEOWBOTFAKEDATA");
+    }
     return new Response(JSON.stringify(payload), {
       status: 200,
       headers: {
@@ -460,12 +513,6 @@ Deno.serve(async (req) => {
           body.message.channel_id +
           "/messages/" +
           body.message.id;
-        var thing = await fetch(url, {
-          // patch request to remove the old buttons
-          method: "PATCH",
-          headers: head,
-          body: JSON.stringify({ components: [] }),
-        });
         thing = await fetch(url, {
           // delete old message
           method: "DELETE",
@@ -816,6 +863,13 @@ async function updateCommands() {
       integration_types: [0, 1],
     },
     {
+      name: "daily",
+      description: "get daily cat dollars",
+      type: 1,
+      contexts: [0, 1, 2],
+      integration_types: [0, 1],
+    },
+    {
       name: "get avatar",
       type: 2,
       contexts: [0, 1, 2],
@@ -915,18 +969,38 @@ async function editHandler(handle, body, input, components = false) {
   console.log(response);
 }
 
-async function getMessages(channel, num = 50, separator = "\n") {
+async function getMessages(
+  channel,
+  num = 50,
+  separator = "\n",
+  return_list = false,
+  ids = false,
+) {
   const url = api + "/channels/" + channel + "/messages" + "?limit=" + num;
   const messages_array = await get(url, head);
   var response_array = [];
-  for (const e of messages_array) {
-    if (e.content !== "") {
-      response_array.push(`${e.author.username}: ${e.content}`);
-    } else {
-      response_array.push(`${e.author.username}: [NO ACCESS]`);
+  if (!ids) {
+    for (const e of messages_array) {
+      if (e.content !== "") {
+        response_array.push(`${e.author.username}: ${e.content}`);
+      } else {
+        response_array.push(`${e.author.username}: [NO ACCESS]`);
+      }
+    }
+  } else {
+    for (const e of messages_array) {
+      if (e.content !== "") {
+        response_array.push([e.content, e.id, e.author.id]);
+      } else {
+        response_array.push([`[NO ACCESS]`, 0, 0]);
+      }
     }
   }
-  return response_array.join(separator);
+  if (return_list) {
+    return response_array;
+  } else {
+    return response_array.join(separator);
+  }
 }
 
 async function sendMessage(message, channel) {
@@ -996,13 +1070,18 @@ function generateShopComponents() {
 }
 
 function generateWipers() {
+  const random_seed = getDateTime();
+  return seedRandomInt(10, random_seed);
+}
+
+function getDateTime() {
   const current_date = new Date();
-  const random_seed =
+  const date_time =
     " " +
     current_date.getDate() +
     " " +
     current_date.getFullYear() +
     " " +
     current_date.getMonth();
-  return seedRandomInt(10, random_seed);
+  return date_time;
 }
