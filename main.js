@@ -4,6 +4,8 @@ import { meowbot_prompt } from "./prompts.js";
 import { default as Alea, Mash } from "jsr:@iv/alea";
 import nacl from "https://esm.sh/tweetnacl@v1.0.3"; // i dont want to learn how authentication works
 import { Buffer } from "node:buffer"; // needs this for some reason? idk i copied the authentication code from discord
+import { use } from "react";
+import { isInt32Array } from "node:util/types";
 const public_key = Deno.env.get("PUBLIC_KEY");
 const api = "https://discord.com/api/v10";
 const cdn = "https://cdn.discordapp.com";
@@ -229,52 +231,18 @@ Deno.serve(async (req) => {
         } else {
           user_id = body.member.user.id;
         }
-        var url = api + "/users/@me/channels";
-        var dm_response = await fetch(url, {
-          // patch request to remove the old button
-          method: "POST",
-          headers: head,
-          body: JSON.stringify({ recipient_id: user_id }),
-        });
-        var dm_response_text = await dm_response.text();
-        var dm_response_json = JSON.parse(dm_response_text);
-        var dm_channel = dm_response_json.id;
-        var old_messages = await getMessages(dm_channel, 5, "", true, true);
-        var meowbot_data = null;
-        var data_message_id;
-        for (const e of old_messages) {
-          if (e[2] == app_id && e[0].substring(0, 13) == "MEOWBOTDATA&&") {
-            meowbot_data = e[0];
-            data_message_id = e[1];
-          }
-        }
-        var new_user = false;
-        if (meowbot_data == null) {
-          meowbot_data = "MEOWBOTDATA&&0&&1 1 1";
-          new_user = true;
-        }
-        var meowbot_data_list = meowbot_data.split("&&");
-        if (meowbot_data_list[2] != getDateTime() || user_id == my_id) {
+        var mdata = await getMeowbotData(user_id);
+        var meowbot_data_list = mdata.meowbot_data_list;
+        if (meowbot_data_list[2] != getDateTime()) {
           payload.data.content = "you got **100** cat dollars!";
           meowbot_data_list[1] = parseInt(meowbot_data_list[1]) + 100;
+          meowbot_data_list[2] = getDateTime();
         } else {
           payload.data.content =
             "already did today, come back tomorrow for more cat dollars";
         }
-        meowbot_data = meowbot_data_list.join("&&");
-        if (!new_user) {
-          var url =
-            api + "/channels/" + dm_channel + "/messages/" + data_message_id;
-          var thing = await fetch(url, {
-            method: "PATCH",
-            headers: head,
-            body: JSON.stringify({
-              content: meowbot_data,
-            }),
-          });
-        } else {
-          await sendMessage(meowbot_data, dm_channel);
-        }
+        var meowbot_data = meowbot_data_list.join("&&");
+        await writeMeowbotData(meowbot_data, mdata);
         break;
       case "cat":
         var cat = await getCat();
@@ -474,7 +442,7 @@ Deno.serve(async (req) => {
               {
                 type: 2,
                 label: "yes!",
-                style: 1,
+                style: 3,
                 custom_id: "buy_yes",
               },
               {
@@ -490,21 +458,55 @@ Deno.serve(async (req) => {
       case "buy_yes":
         var shop_list = shopList();
         var bought_label = body.message.content.split("**")[1];
+        var price_text = body.message.content.split("for ")[1];
+        var price = parseInt(price_text.substring(0, price_text.length - 2));
+        var user_id;
+        if (Object.keys(body).includes("user")) {
+          user_id = body.user.id;
+        } else {
+          user_id = body.member.user.id;
+        }
+        var mdata = await getMeowbotData(user_id);
         var url =
           api +
           "/channels/" +
           body.message.channel_id +
           "/messages/" +
           body.message.id;
-        var thing = await fetch(url, {
-          // patch request to remove the old buttons
-          method: "PATCH",
-          headers: head,
-          body: JSON.stringify({
-            content: `you got **${bought_label}**!`,
-            components: [],
-          }),
-        });
+        if (parseInt(mdata.meowbot_data_list[1]) < price) {
+          var thing = await fetch(url, {
+            method: "PATCH",
+            headers: head,
+            body: JSON.stringify({
+              content: `you don't have enough cat dollars for that...`,
+              components: [
+                {
+                  type: 1,
+                  components: [
+                    {
+                      type: 2,
+                      label: "ok",
+                      style: 2,
+                      custom_id: "buy_no",
+                    },
+                  ],
+                },
+              ],
+            }),
+          });
+        } else {
+          var thing = await fetch(url, {
+            method: "PATCH",
+            headers: head,
+            body: JSON.stringify({
+              content: `you got **${bought_label}**!`,
+              components: [],
+            }),
+          });
+          mdata.meowbot_data_list[1] =
+            parseInt(mdata.meowbot_data_list[1]) - price;
+          await writeMeowbotData(mdata.meowbot_data_list.join("&&"), mdata);
+        }
         break;
       case "buy_no":
         var url =
@@ -1084,4 +1086,58 @@ function getDateTime() {
     " " +
     current_date.getMonth();
   return date_time;
+}
+
+async function getMeowbotData(user_id) {
+  var url = api + "/users/@me/channels";
+  var dm_response = await fetch(url, {
+    // get dm channel
+    method: "POST",
+    headers: head,
+    body: JSON.stringify({ recipient_id: user_id }),
+  });
+  var dm_response_text = await dm_response.text();
+  var dm_response_json = JSON.parse(dm_response_text);
+  var dm_channel = dm_response_json.id;
+  var old_messages = await getMessages(dm_channel, 5, "", true, true);
+  var meowbot_data = null;
+  var data_message_id;
+  for (const e of old_messages) {
+    if (e[2] == app_id && e[0].substring(0, 13) == "MEOWBOTDATA&&") {
+      meowbot_data = e[0];
+      data_message_id = e[1];
+    }
+  }
+  var new_user = false;
+  if (meowbot_data == null) {
+    meowbot_data = "MEOWBOTDATA&&0&&1 1 1";
+    new_user = true;
+  }
+  var meowbot_data_list = meowbot_data.split("&&");
+  return {
+    new_user: new_user,
+    meowbot_data_list: meowbot_data_list,
+    data_message_id: data_message_id,
+    dm_channel: dm_channel,
+  };
+}
+
+async function writeMeowbotData(meowbot_data, mdata) {
+  if (!mdata.new_user) {
+    var url =
+      api +
+      "/channels/" +
+      mdata.dm_channel +
+      "/messages/" +
+      mdata.data_message_id;
+    var thing = await fetch(url, {
+      method: "PATCH",
+      headers: head,
+      body: JSON.stringify({
+        content: meowbot_data,
+      }),
+    });
+  } else {
+    await sendMessage(meowbot_data, mdata.dm_channel);
+  }
 }
