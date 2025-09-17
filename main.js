@@ -401,6 +401,12 @@ Deno.serve(async (req) => {
       case "buy_selection":
         var selected_value = body.data.values[0];
         var shop_list = shopList();
+        var thing = await fetch(url, {
+          // patch request to reset button
+          method: "PATCH",
+          headers: head,
+          body: JSON.stringify({ components: generateShopComponents() }),
+        });
         payload.data.content = `are you sure you would like to buy **${shop_list[selected_value][0]}** for ${shop_list[selected_value][1]}cd?`;
         payload.data.components = [
           {
