@@ -401,6 +401,12 @@ Deno.serve(async (req) => {
       case "buy_selection":
         var selected_value = body.data.values[0];
         var shop_list = shopList();
+        var url =
+          api +
+          "/channels/" +
+          body.message.channel_id +
+          "/messages/" +
+          body.message.id;
         var thing = await fetch(url, {
           // patch request to reset button
           method: "PATCH",
