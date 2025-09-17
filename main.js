@@ -482,6 +482,7 @@ Deno.serve(async (req) => {
           "/messages/" +
           body.message.id;
         if (parseInt(mdata.meowbot_data_list[1]) < price) {
+          payload.type = 1;
           var thing = await fetch(url, {
             method: "PATCH",
             headers: head,
@@ -502,6 +503,7 @@ Deno.serve(async (req) => {
               ],
             }),
           });
+          thing.headers = "";
           console.log(thing);
         } else {
           var thing = await fetch(url, {
@@ -512,6 +514,7 @@ Deno.serve(async (req) => {
               components: [],
             }),
           });
+          thing.headers = "";
           console.log(thing);
           mdata.meowbot_data_list[1] =
             parseInt(mdata.meowbot_data_list[1]) - price;
