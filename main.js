@@ -222,6 +222,16 @@ Deno.serve(async (req) => {
           parseInt(body.data.options[0].value),
         );
         break;
+      case "balance":
+        var user_id;
+        if (Object.keys(body).includes("user")) {
+          user_id = body.user.id;
+        } else {
+          user_id = body.member.user.id;
+        }
+        var mdata = await getMeowbotData(user_id);
+        payload.data.content = `you have **${mdata.meowbot_data_list[1]}** cat dollars`;
+        break;
       case "daily":
         var user_id;
         if (Object.keys(body).includes("user")) {
@@ -858,6 +868,13 @@ async function updateCommands() {
     {
       name: "shop",
       description: "open the shop",
+      type: 1,
+      contexts: [0, 1, 2],
+      integration_types: [0, 1],
+    },
+    {
+      name: "balance",
+      description: "check how many cat dollars you have",
       type: 1,
       contexts: [0, 1, 2],
       integration_types: [0, 1],
