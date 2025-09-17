@@ -4,8 +4,6 @@ import { meowbot_prompt } from "./prompts.js";
 import { default as Alea, Mash } from "jsr:@iv/alea";
 import nacl from "https://esm.sh/tweetnacl@v1.0.3"; // i dont want to learn how authentication works
 import { Buffer } from "node:buffer"; // needs this for some reason? idk i copied the authentication code from discord
-import { use } from "react";
-import { isInt32Array } from "node:util/types";
 const public_key = Deno.env.get("PUBLIC_KEY");
 const api = "https://discord.com/api/v10";
 const cdn = "https://cdn.discordapp.com";
