@@ -407,7 +407,7 @@ Deno.serve(async (req) => {
         }
         break;
     }
-    if (!meowbotdata_allowed) {
+    if (!meowbotdata_allowed && content in payload.data) {
       payload.data.content = payload.data.content
         .split("MEOWBOTDATA")
         .join("MEOWBOTFAKEDATA");
