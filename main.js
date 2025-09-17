@@ -147,9 +147,9 @@ Deno.serve(async (req) => {
           body,
           meowbot_prompt(
             username,
-            body.data.options[0].value,
+            body.data.options[0].value /*,
             await getMessages(body.channel_id, 20),
-            true,
+            true,*/,
           ),
         );
         break;
