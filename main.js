@@ -448,7 +448,7 @@ Deno.serve(async (req) => {
           method: "PATCH",
           headers: head,
           body: JSON.stringify({
-            content: `you got ${bought_label}!`,
+            content: `you got **${bought_label}**!`,
             components: [],
           }),
         });
@@ -948,7 +948,10 @@ function shopList() {
   if (wiper_sale >= 6) {
     wiper_price -= wiper_sale * 10;
   }
-  return { wipers: ["windshield wipers", wiper_price] };
+  return {
+    wipers: ["windshield wipers", wiper_price],
+    octad: ["octad puzzle", 24],
+  };
 }
 
 function generateShopText() {
@@ -957,12 +960,23 @@ function generateShopText() {
   if (wiper_sale >= 6) {
     wiper_price -= wiper_sale * 10;
   }
-  var shop = [`windshield wipers: ${wiper_price}cd`];
+  var shop_list = shopList();
+  var shop = [];
+  for (const e in shop_list) {
+    shop.push(`**${shop_list[e][0]}** - ${shop_list[e][1]}cd`);
+  }
   return shop.join("\n");
 }
 
 function generateShopComponents() {
   var shop_list = shopList();
+  var shop_options = [];
+  for (const e in shop_list) {
+    shop_options.push({
+      label: shop_list[e][0],
+      value: e,
+    });
+  }
   var shop_components = [
     {
       type: 1,
@@ -973,12 +987,7 @@ function generateShopComponents() {
           id: 2,
           custom_id: "buy_selection",
           placeholder: "buy",
-          options: [
-            {
-              label: shop_list["wipers"][0],
-              value: "wipers",
-            },
-          ],
+          options: shop_options,
         },
       ],
     },
