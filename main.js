@@ -432,8 +432,10 @@ Deno.serve(async (req) => {
         var shop_list = shopList();
         var url =
           api +
-          "/channels/" +
-          body.message.channel_id +
+          "/webhooks/" +
+          app_id +
+          "/" +
+          body.token +
           "/messages/" +
           body.message.id;
         var thing = await fetch(url, {
@@ -477,8 +479,10 @@ Deno.serve(async (req) => {
         var mdata = await getMeowbotData(user_id);
         var url =
           api +
-          "/channels/" +
-          body.message.channel_id +
+          "/webhooks/" +
+          app_id +
+          "/" +
+          body.token +
           "/messages/" +
           body.message.id;
         if (parseInt(mdata.meowbot_data_list[1]) < price) {
