@@ -443,6 +443,7 @@ Deno.serve(async (req) => {
           headers: head,
           body: JSON.stringify({ components: generateShopComponents() }),
         });
+        console.log(thing.statusText);
         payload.data.content = `are you sure you would like to buy **${shop_list[selected_value][0]}** for ${shop_list[selected_value][1]}cd?`;
         payload.data.components = [
           {
