@@ -432,18 +432,16 @@ Deno.serve(async (req) => {
         var shop_list = shopList();
         var url =
           api +
-          "/webhooks/" +
-          app_id +
-          "/" +
-          body.token +
-          "/messages/@original";
+          "/channels/" +
+          body.message.channel_id +
+          "/messages/" +
+          body.message.id;
         var thing = await fetch(url, {
           // patch request to reset button
           method: "PATCH",
           headers: head,
           body: JSON.stringify({ components: generateShopComponents() }),
         });
-        console.log(thing.statusText);
         payload.data.content = `are you sure you would like to buy **${shop_list[selected_value][0]}** for ${shop_list[selected_value][1]}cd?`;
         payload.data.components = [
           {
@@ -479,14 +477,12 @@ Deno.serve(async (req) => {
         var mdata = await getMeowbotData(user_id);
         var url =
           api +
-          "/webhooks/" +
-          app_id +
-          "/" +
-          body.token +
+          "/channels/" +
+          body.message.channel_id +
           "/messages/" +
           body.message.id;
         if (parseInt(mdata.meowbot_data_list[1]) < price) {
-          payload.type = 1;
+          payload.type = 6;
           var thing = await fetch(url, {
             method: "PATCH",
             headers: head,
@@ -517,7 +513,6 @@ Deno.serve(async (req) => {
               components: [],
             }),
           });
-          console.log(`${thing.status} ${thing.statusText}`);
           mdata.meowbot_data_list[1] =
             parseInt(mdata.meowbot_data_list[1]) - price;
           await writeMeowbotData(mdata.meowbot_data_list.join("&&"), mdata);
@@ -535,7 +530,6 @@ Deno.serve(async (req) => {
           method: "DELETE",
           headers: head,
         });
-        payload.type = 1;
         break;
       case "ask_button":
         var ask_context = body.message.content;
@@ -877,7 +871,7 @@ async function updateCommands() {
       name: "shop",
       description: "open the shop",
       type: 1,
-      contexts: [0, 1, 2],
+      contexts: [0, 1],
       integration_types: [0, 1],
     },
     {
