@@ -503,8 +503,7 @@ Deno.serve(async (req) => {
               ],
             }),
           });
-          thing.headers = "";
-          console.log(thing);
+          console.log(`${thing.status} ${thing.statusText}`);
         } else {
           var thing = await fetch(url, {
             method: "PATCH",
@@ -514,8 +513,7 @@ Deno.serve(async (req) => {
               components: [],
             }),
           });
-          thing.headers = "";
-          console.log(thing);
+          console.log(`${thing.status} ${thing.statusText}`);
           mdata.meowbot_data_list[1] =
             parseInt(mdata.meowbot_data_list[1]) - price;
           await writeMeowbotData(mdata.meowbot_data_list.join("&&"), mdata);
