@@ -401,7 +401,7 @@ Deno.serve(async (req) => {
       case "buy_selection":
         var selected_value = body.data.values[0];
         var shop_list = shopList();
-        payload.data.content = `are you sure you would like to buy ${shop_list[selected_value][0]} for ${shop_list[selected_value][1]}cd?`;
+        payload.data.content = `are you sure you would like to buy **${shop_list[selected_value][0]}** for ${shop_list[selected_value][1]}cd?`;
         payload.data.components = [
           {
             type: 1,
@@ -424,6 +424,7 @@ Deno.serve(async (req) => {
         break;
       case "buy_yes":
         var shop_list = shopList();
+        var bought_label = body.message.content.split("**")[1];
         var url =
           api +
           "/channels/" +
@@ -435,7 +436,7 @@ Deno.serve(async (req) => {
           method: "PATCH",
           headers: head,
           body: JSON.stringify({
-            content: `you got ${shop_list[selected_value][0]}!`,
+            content: `you got ${shop_list[bought_label][0]}!`,
             components: [],
           }),
         });
