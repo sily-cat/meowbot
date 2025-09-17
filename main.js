@@ -948,7 +948,7 @@ async function updateCommands() {
 
 async function gemini(prompt) {
   var gemini_url =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" +
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" +
     Deno.env.get("GEMINI_API");
   var gemini_payload = {
     contents: [
