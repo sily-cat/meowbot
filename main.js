@@ -436,8 +436,7 @@ Deno.serve(async (req) => {
           app_id +
           "/" +
           body.token +
-          "/messages/" +
-          body.message.id;
+          "/messages/@original";
         var thing = await fetch(url, {
           // patch request to reset button
           method: "PATCH",
