@@ -436,7 +436,7 @@ Deno.serve(async (req) => {
           method: "PATCH",
           headers: head,
           body: JSON.stringify({
-            content: `you got ${shop_list[bought_label][0]}!`,
+            content: `you got ${bought_label}!`,
             components: [],
           }),
         });
