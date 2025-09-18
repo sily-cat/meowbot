@@ -499,7 +499,7 @@ Deno.serve(async (req) => {
           "/messages/" +
           body.message.id;
         if (mdata.data.inventory.includes(shop_item[0]) && shop_item[2]) {
-          //payload.type = 6;
+          payload.type = 6;
           var thing = await fetch(url, {
             method: "PATCH",
             headers: head,
@@ -520,8 +520,8 @@ Deno.serve(async (req) => {
               ],
             }),
           });
-        } else if (mdata.data.cd < price) {
-          //payload.type = 6;
+        } else if (mdata.data.cd < shop_item[1]) {
+          payload.type = 6;
           var thing = await fetch(url, {
             method: "PATCH",
             headers: head,
