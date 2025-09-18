@@ -251,9 +251,13 @@ Deno.serve(async (req) => {
         if (current_time - mdata.data.last_slots > 60000 || !("last_slots" in mdata.data)) {
           var slots = generateSlots();
           payload.data.content = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
+          mdata.data.cd -= 10;
           mdata.data.cd += slots.cd;
           mdata.data.last_slots = current_time;
           await writeMeowbotData(mdata);
+        } else if (mdata.data.cd < 10) {
+          payload.data.flags = 64; // ephemeral
+          payload.data.content = `you don't have enough cat dollars...`;
         } else {
           payload.data.flags = 64; // ephemeral
           payload.data.content = `you have to wait ${60 - Math.floor((current_time - mdata.data.last_slots) / 1000)} more seconds before using slots again`;
@@ -890,7 +894,7 @@ async function updateCommands() {
     },
     {
       name: "inventory",
-      description: "check our inventory",
+      description: "check your inventory",
       type: 1,
       contexts: [0, 1, 2],
       integration_types: [0, 1],
@@ -904,7 +908,7 @@ async function updateCommands() {
     },
     {
       name: "slots",
-      description: "gamble",
+      description: "gamble, costs 10cd",
       type: 1,
       contexts: [0, 1, 2],
       integration_types: [0, 1],
