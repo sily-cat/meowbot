@@ -245,7 +245,7 @@ Deno.serve(async (req) => {
       case "slots":
         var mdata = await getMeowbotData(body);
         var current_time = Date.now();
-        if (current_time - mdata.data.last_slots > 20000 || !("last_slots" in mdata.data)) {
+        if (current_time - mdata.data.last_slots > 60000 || !("last_slots" in mdata.data)) {
           var slots = generateSlots();
           payload.data.content = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
           mdata.data.cd += slots.cd;
@@ -253,7 +253,7 @@ Deno.serve(async (req) => {
           await writeMeowbotData(mdata);
         } else {
           payload.data.flags = 64; // ephemeral
-          payload.data.content = `you have to wait ${20 - Math.floor((current_time - mdata.data.last_slots) / 1000)} more seconds before using slots again`;
+          payload.data.content = `you have to wait ${60 - Math.floor((current_time - mdata.data.last_slots) / 1000)} more seconds before using slots again`;
         }
         break;
       case "cat":
