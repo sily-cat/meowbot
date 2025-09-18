@@ -223,33 +223,15 @@ Deno.serve(async (req) => {
         );
         break;
       case "balance":
-        var user_id;
-        if (Object.keys(body).includes("user")) {
-          user_id = body.user.id;
-        } else {
-          user_id = body.member.user.id;
-        }
-        var mdata = await getMeowbotData(user_id);
+        var mdata = await getMeowbotData(body);
         payload.data.content = `you have **${mdata.data.cd}** cat dollars`;
         break;
       case "inventory":
-        var user_id;
-        if (Object.keys(body).includes("user")) {
-          user_id = body.user.id;
-        } else {
-          user_id = body.member.user.id;
-        }
-        var mdata = await getMeowbotData(user_id);
+        var mdata = await getMeowbotData(body);
         payload.data.content = `your inventory: ${mdata.data.inventory.join(", ")}`;
         break;
       case "daily":
-        var user_id;
-        if (Object.keys(body).includes("user")) {
-          user_id = body.user.id;
-        } else {
-          user_id = body.member.user.id;
-        }
-        var mdata = await getMeowbotData(user_id);
+        var mdata = await getMeowbotData(body);
         if (mdata.data.last_daily != getDateTime()) {
           payload.data.content = "you got **100** cat dollars!";
           mdata.data.cd += 100;
@@ -259,6 +241,19 @@ Deno.serve(async (req) => {
             "already did today, come back tomorrow for more cat dollars";
         }
         await writeMeowbotData(mdata);
+        break;
+      case "slots":
+        var mdata = await getMeowbotData(body);
+        var current_time = Date.now();
+        if (current_time - mdata.data.last_slots > 20000) {
+          var slots = generateSlots();
+          payload.data.content = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
+          mdata.data.cd += slots.cd;
+          await writeMeowbotData(mdata);
+        } else {
+          payload.data.flags = 64; // ephemeral
+          payload.data.content = `you have to wait ${Math.floor((current_time - mdata.data.last_slots) / 1000)} more seconds before using slots again`;
+        }
         break;
       case "cat":
         var cat = await getCat();
@@ -904,6 +899,13 @@ async function updateCommands() {
       integration_types: [0, 1],
     },
     {
+      name: "slots",
+      description: "gamble",
+      type: 1,
+      contexts: [0, 1, 2],
+      integration_types: [0, 1],
+    },
+    {
       name: "get avatar",
       type: 2,
       contexts: [0, 1, 2],
@@ -1059,6 +1061,7 @@ function shopList() {
   return {
     wipers: ["windshield wipers", wiper_price],
     octad: ["octad puzzle", 24],
+    cat: ["cat", 1000000]
   };
 }
 
@@ -1120,7 +1123,13 @@ function getDateTime() {
   return date_time;
 }
 
-async function getMeowbotData(user_id) {
+async function getMeowbotData(body) {
+  var user_id;
+  if (Object.keys(body).includes("user")) {
+    user_id = body.user.id;
+  } else {
+    user_id = body.member.user.id;
+  }
   var url = api + "/users/@me/channels";
   var dm_response = await fetch(url, {
     // get dm channel
@@ -1145,7 +1154,8 @@ async function getMeowbotData(user_id) {
     meowbot_data = {
       cd: 0,
       inventory: [],
-      last_daily: "never"
+      last_daily: "never",
+      last_slots: 0
     };
     new_user = true;
   }
@@ -1177,4 +1187,27 @@ async function writeMeowbotData(mdata) {
   } else {
     await sendMessage(meowbot_data_string, mdata.dm_channel);
   }
+}
+
+function generateSlots() {
+  const slots_array = [
+    "🐱",
+    "❤️",
+    "🥀",
+    "🔪"
+  ];
+  var slots = {};
+  var chosen_slots = [
+    slots_array[getRandomInt(4)],
+    slots_array[getRandomInt(4)],
+    slots_array[getRandomInt(4)]
+  ];
+  slots.slots = `[ ${chosen_slots.join(" | ")} ]`;
+  slots.cd = 2;
+  if (chosen_slots[0] == chosen_slots[1] && chosen_slots[1] == chosen_slots[2]) {
+    slots.cd = 100;
+  } else if (chosen_slots[0] == chosen_slots[1] || chosen_slots[0] == chosen_slots[2] || chosen_slots[1] == chosen_slots[2]) {
+    slots.cd = 20;
+  }
+  return slots;
 }
