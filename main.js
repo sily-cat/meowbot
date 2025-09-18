@@ -230,7 +230,17 @@ Deno.serve(async (req) => {
           user_id = body.member.user.id;
         }
         var mdata = await getMeowbotData(user_id);
-        payload.data.content = `you have **${mdata.meowbot_data_list[1]}** cat dollars`;
+        payload.data.content = `you have **${mdata.data.cd}** cat dollars`;
+        break;
+      case "inventory":
+        var user_id;
+        if (Object.keys(body).includes("user")) {
+          user_id = body.user.id;
+        } else {
+          user_id = body.member.user.id;
+        }
+        var mdata = await getMeowbotData(user_id);
+        payload.data.content = `your inventory: ${mdata.data.inventory.join(", ")}`;
         break;
       case "daily":
         var user_id;
@@ -240,17 +250,15 @@ Deno.serve(async (req) => {
           user_id = body.member.user.id;
         }
         var mdata = await getMeowbotData(user_id);
-        var meowbot_data_list = mdata.meowbot_data_list;
-        if (meowbot_data_list[2] != getDateTime()) {
+        if (mdata.data.last_daily != getDateTime()) {
           payload.data.content = "you got **100** cat dollars!";
-          meowbot_data_list[1] = parseInt(meowbot_data_list[1]) + 100;
-          meowbot_data_list[2] = getDateTime();
+          mdata.data.cd += 100;
+          mdata.data.last_daily = getDateTime();
         } else {
           payload.data.content =
             "already did today, come back tomorrow for more cat dollars";
         }
-        var meowbot_data = meowbot_data_list.join("&&");
-        await writeMeowbotData(meowbot_data, mdata);
+        await writeMeowbotData(mdata);
         break;
       case "cat":
         var cat = await getCat();
@@ -481,7 +489,7 @@ Deno.serve(async (req) => {
           body.message.channel_id +
           "/messages/" +
           body.message.id;
-        if (parseInt(mdata.meowbot_data_list[1]) < price) {
+        if (mdata.data.cd < price) {
           payload.type = 6;
           var thing = await fetch(url, {
             method: "PATCH",
@@ -513,9 +521,9 @@ Deno.serve(async (req) => {
               components: [],
             }),
           });
-          mdata.meowbot_data_list[1] =
-            parseInt(mdata.meowbot_data_list[1]) - price;
-          await writeMeowbotData(mdata.meowbot_data_list.join("&&"), mdata);
+          mdata.data.cd -= price;
+          mdata.data.inventory.push(bought_label);
+          await writeMeowbotData(mdata);
         }
         break;
       case "buy_no":
@@ -882,6 +890,13 @@ async function updateCommands() {
       integration_types: [0, 1],
     },
     {
+      name: "inventory",
+      description: "check our inventory",
+      type: 1,
+      contexts: [0, 1, 2],
+      integration_types: [0, 1],
+    },
+    {
       name: "daily",
       description: "get daily cat dollars",
       type: 1,
@@ -1120,26 +1135,31 @@ async function getMeowbotData(user_id) {
   var meowbot_data = null;
   var data_message_id;
   for (const e of old_messages) {
-    if (e[2] == app_id && e[0].substring(0, 13) == "MEOWBOTDATA&&") {
-      meowbot_data = e[0];
+    if (e[2] == app_id && e[0].substring(0, 13) == "MEOWBOTDATA&B") {
+      meowbot_data = JSON.decode(atob(e[0].substring(13)));
       data_message_id = e[1];
     }
   }
   var new_user = false;
   if (meowbot_data == null) {
-    meowbot_data = "MEOWBOTDATA&&0&&1 1 1";
+    meowbot_data = {
+      cd: 0,
+      inventory: [],
+      last_daily: "never"
+    };
     new_user = true;
   }
-  var meowbot_data_list = meowbot_data.split("&&");
   return {
     new_user: new_user,
-    meowbot_data_list: meowbot_data_list,
+    data: meowbot_data,
     data_message_id: data_message_id,
     dm_channel: dm_channel,
   };
 }
 
-async function writeMeowbotData(meowbot_data, mdata) {
+async function writeMeowbotData(mdata) {
+  var meowbot_data_raw = JSON.stringify(mdata.data);
+  var meowbot_data_string = `MEOWBOTDATA&B${btoa(meowbot_data_raw)}`;
   if (!mdata.new_user) {
     var url =
       api +
@@ -1147,14 +1167,14 @@ async function writeMeowbotData(meowbot_data, mdata) {
       mdata.dm_channel +
       "/messages/" +
       mdata.data_message_id;
-    var thing = await fetch(url, {
+    await fetch(url, {
       method: "PATCH",
       headers: head,
       body: JSON.stringify({
-        content: meowbot_data,
+        content: meowbot_data_string,
       }),
     });
   } else {
-    await sendMessage(meowbot_data, mdata.dm_channel);
+    await sendMessage(meowbot_data_string, mdata.dm_channel);
   }
 }
