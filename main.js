@@ -467,6 +467,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify({ components: generateShopComponents() }),
         });
         payload.data.content = `are you sure you would like to buy **${shop_list[selected_value][0]}** for ${shop_list[selected_value][1]}cd?`;
+        payload.type = 6;
         payload.data.flags = 64;
         payload.data.components = [
           {
