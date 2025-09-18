@@ -253,7 +253,7 @@ Deno.serve(async (req) => {
           await writeMeowbotData(mdata);
         } else {
           payload.data.flags = 64; // ephemeral
-          payload.data.content = `you have to wait ${Math.floor((current_time - mdata.data.last_slots) / 1000)} more seconds before using slots again`;
+          payload.data.content = `you have to wait ${20 - Math.floor((current_time - mdata.data.last_slots) / 1000)} more seconds before using slots again`;
         }
         break;
       case "cat":
