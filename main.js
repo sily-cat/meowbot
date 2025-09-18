@@ -467,6 +467,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify({ components: generateShopComponents() }),
         });
         payload.data.content = `are you sure you would like to buy **${shop_list[selected_value][0]}** for ${shop_list[selected_value][1]}cd?`;
+        payload.data.flags = 64;
         payload.data.components = [
           {
             type: 1,
@@ -490,14 +491,6 @@ Deno.serve(async (req) => {
       case "buy_yes":
         var shop_list = shopList();
         var shop_item = shop_list[body.message.content.split("**")[1]];
-        var price_text = body.message.content.split("for ")[1];
-        var price = parseInt(price_text.substring(0, price_text.length - 2));
-        var user_id;
-        if (Object.keys(body).includes("user")) {
-          user_id = body.user.id;
-        } else {
-          user_id = body.member.user.id;
-        }
         var mdata = await getMeowbotData(body);
         var url =
           api +
@@ -555,12 +548,12 @@ Deno.serve(async (req) => {
             method: "PATCH",
             headers: head,
             body: JSON.stringify({
-              content: `you got **${bought_label}**!`,
+              content: `you got **${shop_item[0]}**!`,
               components: [],
             }),
           });
           mdata.data.cd -= price;
-          mdata.data.inventory.push(bought_label);
+          mdata.data.inventory.push(shop_item[0]);
           await writeMeowbotData(mdata);
         }
         break;
