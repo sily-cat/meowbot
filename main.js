@@ -1292,11 +1292,11 @@ function generateSlots() {
   slots.cd = 2;
   if (chosen_slots[0] == chosen_slots[1] && chosen_slots[1] == chosen_slots[2]) {
     slots.cd = 100;
-  } else if (chosen_slots[0] == chosen_slots[1] || chosen_slots[0] == chosen_slots[2] || chosen_slots[1] == chosen_slots[2]) {
-    slots.cd = 20;
     if (chosen_slots[0] == slots_array[0]) {
       slots.cd = 200;
     }
+  } else if (chosen_slots[0] == chosen_slots[1] || chosen_slots[0] == chosen_slots[2] || chosen_slots[1] == chosen_slots[2]) {
+    slots.cd = 20;
   }
   return slots;
 }
