@@ -245,7 +245,7 @@ Deno.serve(async (req) => {
       case "slots":
         var mdata = await getMeowbotData(body);
         var current_time = Date.now();
-        if (current_time - mdata.data.last_slots > 20000 || !(last_slots in mdata.data)) {
+        if (current_time - mdata.data.last_slots > 20000 || !("last_slots" in mdata.data)) {
           var slots = generateSlots();
           payload.data.content = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
           mdata.data.cd += slots.cd;
