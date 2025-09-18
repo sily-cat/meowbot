@@ -1136,7 +1136,7 @@ async function getMeowbotData(user_id) {
   var data_message_id;
   for (const e of old_messages) {
     if (e[2] == app_id && e[0].substring(0, 13) == "MEOWBOTDATA&B") {
-      meowbot_data = JSON.decode(atob(e[0].substring(13)));
+      meowbot_data = JSON.parse(atob(e[0].substring(13)));
       data_message_id = e[1];
     }
   }
