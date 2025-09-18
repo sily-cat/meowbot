@@ -1148,7 +1148,7 @@ async function getMeowbotData(body) {
   var dm_response_text = await dm_response.text();
   var dm_response_json = JSON.parse(dm_response_text);
   var dm_channel = dm_response_json.id;
-  var old_messages = await getMessages(dm_channel, 5, "", true, true);
+  var old_messages = await getMessages(dm_channel, 30, "", true, true);
   var meowbot_data = null;
   var data_message_id;
   for (const e of old_messages) {
