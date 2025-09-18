@@ -95,6 +95,7 @@ Deno.serve(async (req) => {
       data: {},
     };
     console.log(body.data.id);
+    console.log(body.context);
     if(body.context == "0") {
       payload.data.flags = 64; // ephemeral in bot dm
     }
