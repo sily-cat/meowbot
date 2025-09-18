@@ -1198,7 +1198,8 @@ function generateSlots() {
     "🐱",
     "❤️",
     "🥀",
-    "🔪"
+    "🔪",
+    "🌹"
   ];
   var slots = {};
   var chosen_slots = [
