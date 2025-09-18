@@ -552,7 +552,7 @@ Deno.serve(async (req) => {
               components: [],
             }),
           });
-          mdata.data.cd -= price;
+          mdata.data.cd -= shop_item[1];
           mdata.data.inventory.push(shop_item[0]);
           await writeMeowbotData(mdata);
         }
