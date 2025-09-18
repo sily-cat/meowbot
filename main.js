@@ -235,7 +235,7 @@ Deno.serve(async (req) => {
         break;
       case "daily":
         var mdata = await getMeowbotData(body);
-        if (mdata.data.last_daily != getDateTime()) {
+        if (mdata.data.last_daily != getDateTime() || mdata.user_id == my_id) {
           payload.data.content = "you got **100** cat dollars!";
           mdata.data.cd += 100;
           mdata.data.last_daily = getDateTime();
@@ -489,7 +489,7 @@ Deno.serve(async (req) => {
         break;
       case "buy_yes":
         var shop_list = shopList();
-        var bought_label = body.message.content.split("**")[1];
+        var shop_item = shop_list[body.message.content.split("**")[1]];
         var price_text = body.message.content.split("for ")[1];
         var price = parseInt(price_text.substring(0, price_text.length - 2));
         var user_id;
@@ -505,8 +505,11 @@ Deno.serve(async (req) => {
           body.message.channel_id +
           "/messages/" +
           body.message.id;
+        if (mdata.data.inventory.includes(shop_item[0]) && shop_item[2]) {
+          payload.type = 6;hguhguihuhuhiu
+        }
         if (mdata.data.cd < price) {
-          payload.type = 6;
+          //payload.type = 6;
           var thing = await fetch(url, {
             method: "PATCH",
             headers: head,
@@ -921,7 +924,14 @@ async function updateCommands() {
     },
     {
       name: "slots",
-      description: "gamble, costs 10cd",
+      description: "gamble, costs 15cd",
+      type: 1,
+      contexts: [0, 1, 2],
+      integration_types: [0, 1],
+    },
+    {
+      name: "blackjack",
+      description: "gamble, costs 30cd",
       type: 1,
       contexts: [0, 1, 2],
       integration_types: [0, 1],
@@ -1099,9 +1109,10 @@ function shopList() {
     wiper_price -= wiper_sale * 10;
   }
   return {
-    wipers: ["windshield wipers", wiper_price],
-    octad: ["octad puzzle", 24],
-    cat: ["cat", 1000000]
+    "wipers": ["windshield wipers", wiper_price, false],
+    "octad puzzle": ["octad puzzle", 24, false],
+    "cat": ["cat", 1000000, false],
+    "deck of cards": ["deck of cards", 150, true]
   };
 }
 
@@ -1204,6 +1215,7 @@ async function getMeowbotData(body) {
     data: meowbot_data,
     data_message_id: data_message_id,
     dm_channel: dm_channel,
+    user_id: user_id
   };
 }
 
