@@ -249,6 +249,7 @@ Deno.serve(async (req) => {
           var slots = generateSlots();
           payload.data.content = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
           mdata.data.cd += slots.cd;
+          mdata.data.last_slots = current_time;
           await writeMeowbotData(mdata);
         } else {
           payload.data.flags = 64; // ephemeral
