@@ -478,7 +478,7 @@ Deno.serve(async (req) => {
         } else {
           user_id = body.member.user.id;
         }
-        var mdata = await getMeowbotData(user_id);
+        var mdata = await getMeowbotData(body);
         var url =
           api +
           "/channels/" +
