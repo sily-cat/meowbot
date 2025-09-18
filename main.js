@@ -258,7 +258,7 @@ Deno.serve(async (req) => {
             await writeMeowbotData(mdata);
           } else {
             payload.data.content = "[ <a:slots:1418319955408977951> | <a:slots:1418319955408977951> | <a:slots:1418319955408977951> ]\n..."
-            setTimeout(() {
+            setTimeout(() -> {
               var slots = generateSlots();
               var message_edit = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
               mdata.data.cd -= 15;
