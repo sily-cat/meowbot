@@ -252,7 +252,7 @@ Deno.serve(async (req) => {
           if (body.context == "2") {
             var slots = generateSlots();
             payload.data.content = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
-            mdata.data.cd -= 15;
+            mdata.data.cd -= 10;
             mdata.data.cd += slots.cd;
             mdata.data.last_slots = current_time;
             await writeMeowbotData(mdata);
@@ -261,19 +261,39 @@ Deno.serve(async (req) => {
             setTimeout(function() {
               var slots = generateSlots();
               var message_edit = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
-              mdata.data.cd -= 15;
+              mdata.data.cd -= 10;
               mdata.data.cd += slots.cd;
               mdata.data.last_slots = current_time;
               writeMeowbotData(mdata);
               editHandlerSync(body, message_edit);
             }, 1000);
           }
-        } else if (mdata.data.cd < 15) {
+        } else if (mdata.data.cd < 10) {
           payload.data.flags = 64; // ephemeral
           payload.data.content = `you don't have enough cat dollars...`;
         } else {
           payload.data.flags = 64; // ephemeral
           payload.data.content = `you have to wait ${60 - Math.floor((current_time - mdata.data.last_slots) / 1000)} more seconds before using slots again`;
+        }
+        break;
+      case "blackjackold":
+        var mdata = await getMeowbotData(body);
+        var current_time = Date.now();
+        if (current_time - mdata.data.last_slots > 120000 || !("last_bj" in mdata.data)) {
+          var dealer_cards = [];
+          dealer_cards.push(generateCard());
+          dealer_cards.push(generateCard(dealer_cards));
+          payload.data.content = ``;
+          mdata.data.cd -= 15;
+          mdata.data.cd += slots.cd;
+          mdata.data.last_slots = current_time;
+          await writeMeowbotData(mdata);
+        } else if (mdata.data.cd < 30) {
+          payload.data.flags = 64; // ephemeral
+          payload.data.content = `you don't have enough cat dollars...`;
+        } else {
+          payload.data.flags = 64; // ephemeral
+          payload.data.content = `you have to wait ${120 - Math.floor((current_time - mdata.data.last_slots) / 1000)} more seconds before playing blackjack again`;
         }
         break;
       case "cat":
@@ -937,14 +957,14 @@ async function updateCommands() {
     },
     {
       name: "slots",
-      description: "gamble, costs 15cd",
+      description: "gamble, costs 10cd",
       type: 1,
       contexts: [0, 1, 2],
       integration_types: [0, 1],
     },
     {
       name: "blackjack",
-      description: "gamble, costs 30cd",
+      description: "gamble, costs 100cd",
       type: 1,
       contexts: [0, 1, 2],
       integration_types: [0, 1],
@@ -1274,9 +1294,40 @@ function generateSlots() {
     slots.cd = 100;
   } else if (chosen_slots[0] == chosen_slots[1] || chosen_slots[0] == chosen_slots[2] || chosen_slots[1] == chosen_slots[2]) {
     slots.cd = 20;
-  }
-  if (chosen_slots == ["🐱", "🐱", "🐱"]) {
-    slots.cd = 200;
+    if (chosen_slots[0] == slots_array[0]) {
+      slots.cd = 200;
+    }
   }
   return slots;
+}
+
+function generateCard(used_cards=[]) {
+  const suits = [
+    "♠",
+    "♡",
+    "♢",
+    "♣"
+  ];
+  const numbers = [
+    "A",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "J",
+    "Q",
+    "K"
+  ];
+  var found_one = false;
+  var card;
+  while (!found_one) {
+    card = [numbers[getRandomInt(numbers.length)], suits[getRandomInt(suits.length)]];
+    found_one = !used_cards.includes(card);
+  }
+  return card;
 }
