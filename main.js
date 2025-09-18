@@ -506,9 +506,28 @@ Deno.serve(async (req) => {
           "/messages/" +
           body.message.id;
         if (mdata.data.inventory.includes(shop_item[0]) && shop_item[2]) {
-          payload.type = 6;hguhguihuhuhiu
-        }
-        if (mdata.data.cd < price) {
+          //payload.type = 6;
+          var thing = await fetch(url, {
+            method: "PATCH",
+            headers: head,
+            body: JSON.stringify({
+              content: `you can only buy one ${shop_item[0]}!`,
+              components: [
+                {
+                  type: 1,
+                  components: [
+                    {
+                      type: 2,
+                      label: "ok",
+                      style: 2,
+                      custom_id: "buy_no",
+                    },
+                  ],
+                },
+              ],
+            }),
+          });
+        } else if (mdata.data.cd < price) {
           //payload.type = 6;
           var thing = await fetch(url, {
             method: "PATCH",
