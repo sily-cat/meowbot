@@ -1203,9 +1203,9 @@ function generateSlots() {
   ];
   var slots = {};
   var chosen_slots = [
-    slots_array[getRandomInt(4)],
-    slots_array[getRandomInt(4)],
-    slots_array[getRandomInt(4)]
+    slots_array[getRandomInt(5)],
+    slots_array[getRandomInt(5)],
+    slots_array[getRandomInt(5)]
   ];
   slots.slots = `[ ${chosen_slots.join(" | ")} ]`;
   slots.cd = 2;
