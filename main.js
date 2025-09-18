@@ -264,7 +264,7 @@ Deno.serve(async (req) => {
               mdata.data.cd -= 15;
               mdata.data.cd += slots.cd;
               mdata.data.last_slots = current_time;
-              await writeMeowbotData(mdata);
+              writeMeowbotData(mdata);
               editHandlerSync(body, message_edit);
             }, 1000);
           }
