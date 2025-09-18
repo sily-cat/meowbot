@@ -249,13 +249,26 @@ Deno.serve(async (req) => {
         var mdata = await getMeowbotData(body);
         var current_time = Date.now();
         if (current_time - mdata.data.last_slots > 60000 || !("last_slots" in mdata.data)) {
-          var slots = generateSlots();
-          payload.data.content = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
-          mdata.data.cd -= 10;
-          mdata.data.cd += slots.cd;
-          mdata.data.last_slots = current_time;
-          await writeMeowbotData(mdata);
-        } else if (mdata.data.cd < 10) {
+          if (body.context == "2") {
+            var slots = generateSlots();
+            payload.data.content = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
+            mdata.data.cd -= 15;
+            mdata.data.cd += slots.cd;
+            mdata.data.last_slots = current_time;
+            await writeMeowbotData(mdata);
+          } else {
+            payload.data.content = "[ <a:slots:1418319955408977951> | <a:slots:1418319955408977951> | <a:slots:1418319955408977951> ]\n..."
+            setTimeout(() {
+              var slots = generateSlots();
+              var message_edit = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
+              mdata.data.cd -= 15;
+              mdata.data.cd += slots.cd;
+              mdata.data.last_slots = current_time;
+              await writeMeowbotData(mdata);
+              editHandlerSync(body, message_edit);
+            }, 1000);
+          }
+        } else if (mdata.data.cd < 15) {
           payload.data.flags = 64; // ephemeral
           payload.data.content = `you don't have enough cat dollars...`;
         } else {
@@ -1013,6 +1026,25 @@ async function editHandler(handle, body, input, components = false) {
   console.log(response);
 }
 
+async function editHandlerSync(body, input, components = false) {
+  const url =
+    api + "/webhooks/" + app_id + "/" + body.token + "/messages/@original";
+  var cont = input;
+  if (cont.length > 2000) {
+    cont = cont.slice(0, 1999);
+  }
+  var payload = { content: cont };
+  if (components) {
+    payload.components = components;
+  }
+  const response = await fetch(url, {
+    method: "PATCH",
+    headers: head,
+    body: JSON.stringify(payload),
+  });
+  console.log(response);
+}
+
 async function getMessages(
   channel,
   num = 50,
@@ -1217,6 +1249,9 @@ function generateSlots() {
     slots.cd = 100;
   } else if (chosen_slots[0] == chosen_slots[1] || chosen_slots[0] == chosen_slots[2] || chosen_slots[1] == chosen_slots[2]) {
     slots.cd = 20;
+  }
+  if (chosen_slots == ["🐱", "🐱", "🐱"]) {
+    slots.cd = 200;
   }
   return slots;
 }
