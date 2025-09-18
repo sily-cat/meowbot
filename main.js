@@ -95,6 +95,9 @@ Deno.serve(async (req) => {
       data: {},
     };
     console.log(body.data.id);
+    if(body.context == "0") {
+      payload.data.flags = 64; // ephemeral in bot dm
+    }
     switch (body.data.name) {
       case "meow":
         payload.data.content = meowText();
