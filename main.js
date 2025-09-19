@@ -285,7 +285,7 @@ Deno.serve(async (req) => {
         } else if (mdata.data.cd < 50) {
           payload.data.flags = 64; // ephemeral
           payload.data.content = `you don't have enough cat dollars...`;
-        } else if (current_time - mdata.data.last_slots > 120 || !("last_bj" in mdata.data)) {
+        } else if (current_time - mdata.data.last_slots > 120000 || !("last_bj" in mdata.data)) {
           var dealer_cards = [];
           var your_cards = [];
           dealer_cards.push(generateCard());
