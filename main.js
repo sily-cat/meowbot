@@ -295,28 +295,33 @@ Deno.serve(async (req) => {
           for (var e of your_cards) {
             your_cards_formatted.push(e.join(" "));
           }
-          payload.data.content = `dealer's card: **[${dealer_cards[0].join(" ")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nwhat would you like to do?`;
           mdata.data.cd -= 50;
           mdata.data.last_bj = current_time;
-          payload.data.components = [
-            {
-              type: 1,
-              components: [
-                {
-                  type: 2,
-                  label: "hit",
-                  style: 2,
-                  custom_id: "blackjack_hit",
-                },
-                {
-                  type: 2,
-                  label: "stand",
-                  style: 2,
-                  custom_id: "blackjack_stand",
-                },
-              ],
-            },
-          ];
+          if (handValue(your_cards) == 21) {
+            payload.data.content = `dealer's card: **[${dealer_cards[0].join(" ")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nblackjack! you got 250cd`;
+            mdata.data.cd += 250;
+          } else {
+            payload.data.content = `dealer's card: **[${dealer_cards[0].join(" ")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nwhat would you like to do?`;
+            payload.data.components = [
+              {
+                type: 1,
+                components: [
+                  {
+                    type: 2,
+                    label: "hit",
+                    style: 2,
+                    custom_id: "blackjack_hit",
+                  },
+                  {
+                    type: 2,
+                    label: "stand",
+                    style: 2,
+                    custom_id: "blackjack_stand",
+                  },
+                ],
+              },
+            ];
+          }
           await writeMeowbotData(mdata);
         } else {
           payload.data.flags = 64; // ephemeral
