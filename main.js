@@ -569,12 +569,12 @@ Deno.serve(async (req) => {
             method: "PATCH",
             headers: head,
             body: JSON.stringify({
-              content: `dealer's cards: **[${dealer_cards_formatted.join("][")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nyou won and got 100cd!`,
+              content: `dealer's cards: **[${dealer_cards_formatted.join("][")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nyou won and got 120cd!`,
               components: [],
             }),
           });
           var mdata = await getMeowbotData(body);
-          mdata.data.cd += 100;
+          mdata.data.cd += 120;
           writeMeowbotData(mdata);
         } else if (handValue(your_cards) == handValue(dealer_cards)) {
           fetch(url, {
