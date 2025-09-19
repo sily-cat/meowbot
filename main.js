@@ -279,7 +279,10 @@ Deno.serve(async (req) => {
       case "blackjack":
         var mdata = await getMeowbotData(body);
         var current_time = Date.now();
-        if (mdata.data.cd < 50) {
+        if (!mdata.data.inventory.includes("deck of cards")) {
+          payload.data.flags = 64; // ephemeral
+          payload.data.content = `you need a deck of cards to play blackjack!`;
+        } else if (mdata.data.cd < 50) {
           payload.data.flags = 64; // ephemeral
           payload.data.content = `you don't have enough cat dollars...`;
         } else if (current_time - mdata.data.last_slots > 120 || !("last_bj" in mdata.data)) {
