@@ -276,24 +276,48 @@ Deno.serve(async (req) => {
           payload.data.content = `you have to wait ${60 - Math.floor((current_time - mdata.data.last_slots) / 1000)} more seconds before using slots again`;
         }
         break;
-      case "blackjackold":
+      case "blackjack":
         var mdata = await getMeowbotData(body);
         var current_time = Date.now();
-        if (current_time - mdata.data.last_slots > 120000 || !("last_bj" in mdata.data)) {
+        if (current_time - mdata.data.last_slots > 120 || !("last_bj" in mdata.data)) {
           var dealer_cards = [];
+          var your_cards = [];
           dealer_cards.push(generateCard());
-          dealer_cards.push(generateCard(dealer_cards));
-          payload.data.content = ``;
-          mdata.data.cd -= 15;
-          mdata.data.cd += slots.cd;
-          mdata.data.last_slots = current_time;
+          your_cards.push(generateCard(dealer_cards));
+          your_cards.push(generateCard([...dealer_cards, ...your_cards]));
+          var your_cards_formatted = [];
+          for (e of your_cards) {
+            your_cards_formatted.push(e.join(" "));
+          }
+          payload.data.content = `dealer's card: **[${dealer_cards[0].join(" ")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nwhat would you like to do?`;
+          mdata.data.cd -= 50;
+          mdata.data.last_bj = current_time;
+          payload.data.components = [
+            {
+              type: 1,
+              components: [
+                {
+                  type: 2,
+                  label: "hit",
+                  style: 2,
+                  custom_id: "blackjack_hit",
+                },
+                {
+                  type: 2,
+                  label: "stand",
+                  style: 2,
+                  custom_id: "blackjack_stand",
+                },
+              ],
+            },
+          ];
           await writeMeowbotData(mdata);
-        } else if (mdata.data.cd < 30) {
+        } else if (mdata.data.cd < 50) {
           payload.data.flags = 64; // ephemeral
           payload.data.content = `you don't have enough cat dollars...`;
         } else {
           payload.data.flags = 64; // ephemeral
-          payload.data.content = `you have to wait ${120 - Math.floor((current_time - mdata.data.last_slots) / 1000)} more seconds before playing blackjack again`;
+          payload.data.content = `you have to wait ${120 - Math.floor((current_time - mdata.data.last_bj) / 1000)} more seconds before playing blackjack again`;
         }
         break;
       case "cat":
@@ -471,6 +495,95 @@ Deno.serve(async (req) => {
       data: {},
     };
     switch (body.data.custom_id) {
+      /*
+      dealer's card: **[J ♡]**
+      your cards: **[6 ♣][5 ♢]**
+      what would you like to do?
+      */
+      case "blackjack_hit":
+        payload.type = 6;
+        var hand_extract = body.message.content.split("**[").join("]**").split("]**");
+        var dealer_cards = [hand_extract[1].split(" ")];
+        var your_cards_formatted = hand_extract[3].split("][");
+        var your_cards = [];
+        for (e of your_cards_formatted) {
+          your_cards.push(e.split(" "));
+        }
+        your_cards.push(generateCard([...dealer_cards, ...your_cards]));
+        your_cards_formatted = [];
+        for (e of your_cards) {
+          your_cards_formatted.push(e.join(" "));
+        }
+        if (handValue(your_cards) > 21) {
+          await fetch(url, {
+            method: "PATCH",
+            headers: head,
+            body: JSON.stringify({
+              content: `dealer's card: **[${dealer_cards[0].join(" ")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nyou lost...`,
+              components: [],
+            }),
+          });
+        } else {
+          await fetch(url, {
+            method: "PATCH",
+            headers: head,
+            body: JSON.stringify({
+              content: `dealer's card: **[${dealer_cards[0].join(" ")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nwhat would you like to do?`,
+            }),
+          });
+        }
+        break;
+      case "blackjack_stand":
+        payload.type = 6;
+        var hand_extract = body.message.content.split("**[").join("]**").split("]**");
+        var dealer_cards = [hand_extract[1].split(" ")];
+        var your_cards_formatted = hand_extract[3].split("][");
+        var your_cards = [];
+        for (e of your_cards_formatted) {
+          your_cards.push(e.split(" "));
+        }
+        while (handValue(dealer_cards) < 17) {
+          dealer_cards.push(generateCard([...dealer_cards, ...your_cards]));
+        }
+        var dealer_cards_formatted = [];
+        for (e of dealer_cards) {
+          dealer_cards_formatted.push(e.join(" "));
+        }
+        if (handValue(your_cards) > handValue(dealer_cards) && handValue(dealer_cards) <= 21) {
+          fetch(url, {
+            method: "PATCH",
+            headers: head,
+            body: JSON.stringify({
+              content: `dealer's cards: **[${dealer_cards_formatted.join("][")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nyou won and got 150cd!`,
+              components: [],
+            }),
+          });
+          var mdata = await getMeowbotData(body);
+          mdata.data.cd += 150;
+          writeMeowbotData(mdata);
+        } else if (handValue(your_cards) == handValue(dealer_cards)) {
+          fetch(url, {
+            method: "PATCH",
+            headers: head,
+            body: JSON.stringify({
+              content: `dealer's cards: **[${dealer_cards_formatted.join("][")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nyou tied and got 100cd`,
+              components: [],
+            }),
+          });
+          var mdata = await getMeowbotData(body);
+          mdata.data.cd += 100;
+          writeMeowbotData(mdata);
+        } else {
+          fetch(url, {
+            method: "PATCH",
+            headers: head,
+            body: JSON.stringify({
+              content: `dealer's cards: **[${dealer_cards_formatted.join("][")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nyou lost...`,
+              components: [],
+            }),
+          });
+        }
+        break;
       case "buy_selection":
         var selected_value = body.data.values[0];
         var shop_list = shopList();
@@ -575,7 +688,7 @@ Deno.serve(async (req) => {
           });
           mdata.data.cd -= shop_item[1];
           mdata.data.inventory.push(shop_item[0]);
-          await writeMeowbotData(mdata);
+          writeMeowbotData(mdata);
         }
         break;
       case "buy_no":
@@ -964,7 +1077,7 @@ async function updateCommands() {
     },
     {
       name: "blackjack",
-      description: "gamble, costs 100cd",
+      description: "gamble, costs 50cd",
       type: 1,
       contexts: [0, 1, 2],
       integration_types: [0, 1],
@@ -1330,4 +1443,40 @@ function generateCard(used_cards=[]) {
     found_one = !used_cards.includes(card);
   }
   return card;
+}
+
+function handValue(hand=[]) {
+  const values = {
+    "A": 11,
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
+    "6": 6,
+    "7": 7,
+    "8": 8,
+    "9": 9,
+    "10": 10,
+    "J": 10,
+    "Q": 10,
+    "K": 10
+  }
+  var card_total = 0;
+  var aces = 0;
+  for (e of hand) {
+    if (e[0] == "A") {
+      aces++;
+    } else {
+      card_total += values[e[0]];
+    }
+  }
+  while (aces > 0) {
+    if (card_total > 10 || aces > 1) {
+      card_total += 1;
+    } else {
+      card_total += 11;
+    }
+    aces--;
+  }
+  return card_total;
 }
