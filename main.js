@@ -569,24 +569,24 @@ Deno.serve(async (req) => {
             method: "PATCH",
             headers: head,
             body: JSON.stringify({
-              content: `dealer's cards: **[${dealer_cards_formatted.join("][")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nyou won and got 150cd!`,
+              content: `dealer's cards: **[${dealer_cards_formatted.join("][")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nyou won and got 100cd!`,
               components: [],
             }),
           });
           var mdata = await getMeowbotData(body);
-          mdata.data.cd += 150;
+          mdata.data.cd += 100;
           writeMeowbotData(mdata);
         } else if (handValue(your_cards) == handValue(dealer_cards)) {
           fetch(url, {
             method: "PATCH",
             headers: head,
             body: JSON.stringify({
-              content: `dealer's cards: **[${dealer_cards_formatted.join("][")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nyou tied and got 100cd`,
+              content: `dealer's cards: **[${dealer_cards_formatted.join("][")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nyou tied and got 50cd`,
               components: [],
             }),
           });
           var mdata = await getMeowbotData(body);
-          mdata.data.cd += 100;
+          mdata.data.cd += 50;
           writeMeowbotData(mdata);
         } else {
           fetch(url, {
