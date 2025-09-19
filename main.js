@@ -286,7 +286,7 @@ Deno.serve(async (req) => {
           your_cards.push(generateCard(dealer_cards));
           your_cards.push(generateCard([...dealer_cards, ...your_cards]));
           var your_cards_formatted = [];
-          for (e of your_cards) {
+          for (var e of your_cards) {
             your_cards_formatted.push(e.join(" "));
           }
           payload.data.content = `dealer's card: **[${dealer_cards[0].join(" ")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nwhat would you like to do?`;
@@ -506,12 +506,12 @@ Deno.serve(async (req) => {
         var dealer_cards = [hand_extract[1].split(" ")];
         var your_cards_formatted = hand_extract[3].split("][");
         var your_cards = [];
-        for (e of your_cards_formatted) {
+        for (var e of your_cards_formatted) {
           your_cards.push(e.split(" "));
         }
         your_cards.push(generateCard([...dealer_cards, ...your_cards]));
         your_cards_formatted = [];
-        for (e of your_cards) {
+        for (var e of your_cards) {
           your_cards_formatted.push(e.join(" "));
         }
         if (handValue(your_cards) > 21) {
@@ -539,14 +539,14 @@ Deno.serve(async (req) => {
         var dealer_cards = [hand_extract[1].split(" ")];
         var your_cards_formatted = hand_extract[3].split("][");
         var your_cards = [];
-        for (e of your_cards_formatted) {
+        for (var e of your_cards_formatted) {
           your_cards.push(e.split(" "));
         }
         while (handValue(dealer_cards) < 17) {
           dealer_cards.push(generateCard([...dealer_cards, ...your_cards]));
         }
         var dealer_cards_formatted = [];
-        for (e of dealer_cards) {
+        for (var e of dealer_cards) {
           dealer_cards_formatted.push(e.join(" "));
         }
         if (handValue(your_cards) > handValue(dealer_cards) && handValue(dealer_cards) <= 21) {
@@ -1463,7 +1463,7 @@ function handValue(hand=[]) {
   }
   var card_total = 0;
   var aces = 0;
-  for (e of hand) {
+  for (var e of hand) {
     if (e[0] == "A") {
       aces++;
     } else {
