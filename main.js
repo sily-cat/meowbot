@@ -501,6 +501,12 @@ Deno.serve(async (req) => {
       what would you like to do?
       */
       case "blackjack_hit":
+        var url =
+          api +
+          "/channels/" +
+          body.message.channel_id +
+          "/messages/" +
+          body.message.id;
         payload.type = 6;
         var hand_extract = body.message.content.split("**[").join("]**").split("]**");
         var dealer_cards = [hand_extract[1].split(" ")];
@@ -515,7 +521,7 @@ Deno.serve(async (req) => {
           your_cards_formatted.push(e.join(" "));
         }
         if (handValue(your_cards) > 21) {
-          await fetch(url, {
+          fetch(url, {
             method: "PATCH",
             headers: head,
             body: JSON.stringify({
@@ -524,7 +530,7 @@ Deno.serve(async (req) => {
             }),
           });
         } else {
-          await fetch(url, {
+          fetch(url, {
             method: "PATCH",
             headers: head,
             body: JSON.stringify({
@@ -534,6 +540,12 @@ Deno.serve(async (req) => {
         }
         break;
       case "blackjack_stand":
+        var url =
+          api +
+          "/channels/" +
+          body.message.channel_id +
+          "/messages/" +
+          body.message.id;
         payload.type = 6;
         var hand_extract = body.message.content.split("**[").join("]**").split("]**");
         var dealer_cards = [hand_extract[1].split(" ")];
