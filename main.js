@@ -561,7 +561,7 @@ Deno.serve(async (req) => {
         for (var e of dealer_cards) {
           dealer_cards_formatted.push(e.join(" "));
         }
-        if (handValue(your_cards) > handValue(dealer_cards) && handValue(dealer_cards) <= 21) {
+        if (handValue(your_cards) > handValue(dealer_cards) || handValue(dealer_cards) > 21) {
           fetch(url, {
             method: "PATCH",
             headers: head,
