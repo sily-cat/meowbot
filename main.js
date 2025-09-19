@@ -248,7 +248,10 @@ Deno.serve(async (req) => {
       case "slots":
         var mdata = await getMeowbotData(body);
         var current_time = Date.now();
-        if (current_time - mdata.data.last_slots > 60000 || !("last_slots" in mdata.data)) {
+        if (mdata.data.cd < 10) {
+          payload.data.flags = 64; // ephemeral
+          payload.data.content = `you don't have enough cat dollars...`;
+        } else if (current_time - mdata.data.last_slots > 60000 || !("last_slots" in mdata.data)) {
           if (body.context == "2") {
             var slots = generateSlots();
             payload.data.content = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
@@ -268,9 +271,6 @@ Deno.serve(async (req) => {
               editHandlerSync(body, message_edit);
             }, 1000);
           }
-        } else if (mdata.data.cd < 10) {
-          payload.data.flags = 64; // ephemeral
-          payload.data.content = `you don't have enough cat dollars...`;
         } else {
           payload.data.flags = 64; // ephemeral
           payload.data.content = `you have to wait ${60 - Math.floor((current_time - mdata.data.last_slots) / 1000)} more seconds before using slots again`;
@@ -279,7 +279,10 @@ Deno.serve(async (req) => {
       case "blackjack":
         var mdata = await getMeowbotData(body);
         var current_time = Date.now();
-        if (current_time - mdata.data.last_slots > 120 || !("last_bj" in mdata.data)) {
+        if (mdata.data.cd < 50) {
+          payload.data.flags = 64; // ephemeral
+          payload.data.content = `you don't have enough cat dollars...`;
+        } else if (current_time - mdata.data.last_slots > 120 || !("last_bj" in mdata.data)) {
           var dealer_cards = [];
           var your_cards = [];
           dealer_cards.push(generateCard());
@@ -312,9 +315,6 @@ Deno.serve(async (req) => {
             },
           ];
           await writeMeowbotData(mdata);
-        } else if (mdata.data.cd < 50) {
-          payload.data.flags = 64; // ephemeral
-          payload.data.content = `you don't have enough cat dollars...`;
         } else {
           payload.data.flags = 64; // ephemeral
           payload.data.content = `you have to wait ${120 - Math.floor((current_time - mdata.data.last_bj) / 1000)} more seconds before playing blackjack again`;
