@@ -276,6 +276,23 @@ Deno.serve(async (req) => {
           payload.data.content = `you have to wait ${60 - Math.floor((current_time - mdata.data.last_slots) / 1000)} more seconds before using slots again`;
         }
         break;
+      case "heist":
+        var mdata = await getMeowbotData(body);
+        var current_time = Date.now();
+        if (!mdata.data.inventory.includes("thieves' tools")) {
+          payload.data.flags = 64; // ephemeral
+          payload.data.content = `you need thieves' tools to perform a heist!`;
+        } else if (current_time - mdata.data.last_heist > 180000 || !("last_heist" in mdata.data)) {
+          var heist = generateHeist();
+          payload.data.content = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
+          mdata.data.cd -= 10;
+          mdata.data.last_heist = current_time;
+          await writeMeowbotData(mdata);
+        } else {
+          payload.data.flags = 64; // ephemeral
+          payload.data.content = `you have to wait ${180 - Math.floor((current_time - mdata.data.last_heist) / 1000)} more seconds before using slots again`;
+        }
+        break;
       case "blackjack":
         var mdata = await getMeowbotData(body);
         var current_time = Date.now();
@@ -298,8 +315,8 @@ Deno.serve(async (req) => {
           mdata.data.cd -= 50;
           mdata.data.last_bj = current_time;
           if (handValue(your_cards) == 21) {
-            payload.data.content = `dealer's card: **[${dealer_cards[0].join(" ")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nblackjack! you got 250cd`;
-            mdata.data.cd += 250;
+            payload.data.content = `dealer's card: **[${dealer_cards[0].join(" ")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nblackjack! you got 300cd`;
+            mdata.data.cd += 300;
           } else {
             payload.data.content = `dealer's card: **[${dealer_cards[0].join(" ")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nwhat would you like to do?`;
             payload.data.components = [
@@ -580,12 +597,12 @@ Deno.serve(async (req) => {
             method: "PATCH",
             headers: head,
             body: JSON.stringify({
-              content: `dealer's cards: **[${dealer_cards_formatted.join("][")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nyou won and got 120cd!`,
+              content: `dealer's cards: **[${dealer_cards_formatted.join("][")}]**\nyour cards: **[${your_cards_formatted.join("][")}]**\nyou won and got 150cd!`,
               components: [],
             }),
           });
           var mdata = await getMeowbotData(body);
-          mdata.data.cd += 120;
+          mdata.data.cd += 150;
           writeMeowbotData(mdata);
         } else if (handValue(your_cards) == handValue(dealer_cards)) {
           fetch(url, {
@@ -1102,6 +1119,13 @@ async function updateCommands() {
       integration_types: [0, 1],
     },
     {
+      name: "heist",
+      description: "commit larceny",
+      type: 1,
+      contexts: [0, 1, 2],
+      integration_types: [0, 1],
+    },
+    {
       name: "blackjack",
       description: "gamble, costs 50cd",
       type: 1,
@@ -1283,7 +1307,8 @@ function shopList() {
     "wipers": ["windshield wipers", wiper_price, false],
     "octad puzzle": ["octad puzzle", 24, false],
     "cat": ["cat", 1000000, false],
-    "deck of cards": ["deck of cards", 150, true]
+    "deck of cards": ["deck of cards", 150, true],
+    "thieves' tools": ["thieves' tools", 1000, true]
   };
 }
 
@@ -1512,4 +1537,26 @@ function handValue(hand=[]) {
     aces--;
   }
   return card_total;
+}
+
+function generateHeist() {
+  const fail = [
+    "you went outside and immediately tripped and fell",
+    "you stopped to pet a cat and forgot what you were doing",
+    "you sat down and fell asleep",
+    "nobody was there... this must be a plot of the Organization!",
+    "the voices in your head told you to stop",
+    "you got mugged but they felt bad so you got your money back",
+    "you wake up 12 hours later, having no memory of what happened"
+  ];
+  const small = [
+    "you take an old lady's purse. kinda rude",
+    "you break into a store but the only thing left is a box of shoes for donation",
+    "you rip a whole booster box out of an innocent kid's hands at a Target and open it",
+    "you press the change button on a bunch of vending machines",
+    "you open a drawer and find some money"
+  ];
+  const large = [
+    ""
+  ]
 }
