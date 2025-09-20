@@ -281,16 +281,16 @@ Deno.serve(async (req) => {
         var current_time = Date.now();
         if (!mdata.data.inventory.includes("thieves' tools")) {
           payload.data.flags = 64; // ephemeral
-          payload.data.content = `you need thieves' tools to perform a heist!`;
+          payload.data.content = `you need thieves' tools to do a heist!`;
         } else if (current_time - mdata.data.last_heist > 180000 || !("last_heist" in mdata.data)) {
           var heist = generateHeist();
-          payload.data.content = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
-          mdata.data.cd -= 10;
+          payload.data.content = `${heist.heist}\nyou got **${heist.cd}** cat dollars!`;
+          mdata.data.cd += heist.cd;
           mdata.data.last_heist = current_time;
           await writeMeowbotData(mdata);
         } else {
           payload.data.flags = 64; // ephemeral
-          payload.data.content = `you have to wait ${180 - Math.floor((current_time - mdata.data.last_heist) / 1000)} more seconds before using slots again`;
+          payload.data.content = `you have to wait ${180 - Math.floor((current_time - mdata.data.last_heist) / 1000)} more seconds before doing a heist again`;
         }
         break;
       case "blackjack":
@@ -1554,9 +1554,36 @@ function generateHeist() {
     "you break into a store but the only thing left is a box of shoes for donation",
     "you rip a whole booster box out of an innocent kid's hands at a Target and open it",
     "you press the change button on a bunch of vending machines",
-    "you open a drawer and find some money"
+    "you open a drawer and find some cat dollars"
   ];
   const large = [
-    ""
-  ]
+    "you sneak into a gas station and take ALL their money",
+    "you find some cat dollars on the ground",
+    "you decide not to go to that concert and resell your ticket",
+    "you just go to the casino",
+    "im not creative enough to come up with more interesting lines"
+  ];
+  const grand = [
+    "GRAND LARCENY!! you go to the bank and it's completely empty and the vault is open",
+    "GRAND LARCENY!! you take all the printer ink from the public library printers",
+    "GRAND LARCENY!! you learn how to make perfect cat dollar counterfeits",
+    "GRAND LARCENY!! you ransack your neighbor's house and burn it to the ground",
+    "GRAND LARCENY!! you commit mass genocide to appease the cat gods"
+  ];
+  var roll = getRandomInt(100);
+  var heist = {
+    cd: 0,
+    heist: fail[getRandomInt(fail.length)]
+  }
+  if (roll < 4) {
+    heist.cd = 500;
+    heist.heist = grand[getRandomInt(grand.length)];
+  } else if (roll < 20) {
+    heist.cd = 50;
+    heist.heist = large[getRandomInt(large.length)];
+  } else if (roll < 60) {
+    heist.cd = 15;
+    heist.heist = small[getRandomInt(small.length)];
+  }
+  return heist;
 }
