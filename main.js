@@ -509,9 +509,8 @@ Deno.serve(async (req) => {
       what would you like to do?
       */
       case "blackjack_hit":
+        payload.type = 6;
         if (getUserId(body) != body.message.interaction_metadata.user.id) {
-          payload.data.flags = 64;
-          payload.content = `you aren't the right person...`;
           break;
         }
         var url =
@@ -520,7 +519,6 @@ Deno.serve(async (req) => {
           body.message.channel_id +
           "/messages/" +
           body.message.id;
-        payload.type = 6;
         var hand_extract = body.message.content.split("**[").join("]**").split("]**");
         var dealer_cards = [hand_extract[1].split(" ")];
         var your_cards_formatted = hand_extract[3].split("][");
@@ -553,9 +551,8 @@ Deno.serve(async (req) => {
         }
         break;
       case "blackjack_stand":
+        payload.type = 6;
         if (getUserId(body) != body.message.interaction_metadata.user.id) {
-          payload.data.flags = 64;
-          payload.content = `you aren't the right person...`;
           break;
         }
         var url =
@@ -564,7 +561,6 @@ Deno.serve(async (req) => {
           body.message.channel_id +
           "/messages/" +
           body.message.id;
-        payload.type = 6;
         var hand_extract = body.message.content.split("**[").join("]**").split("]**");
         var dealer_cards = [hand_extract[1].split(" ")];
         var your_cards_formatted = hand_extract[3].split("][");
