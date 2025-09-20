@@ -509,6 +509,11 @@ Deno.serve(async (req) => {
       what would you like to do?
       */
       case "blackjack_hit":
+        if (getUserId(body) != body.message.interaction_metadata.user.id) {
+          payload.data.flags = 64;
+          payload.content = `you aren't the right person...`;
+          break;
+        }
         var url =
           api +
           "/channels/" +
@@ -548,6 +553,11 @@ Deno.serve(async (req) => {
         }
         break;
       case "blackjack_stand":
+        if (getUserId(body) != body.message.interaction_metadata.user.id) {
+          payload.data.flags = 64;
+          payload.content = `you aren't the right person...`;
+          break;
+        }
         var url =
           api +
           "/channels/" +
@@ -1179,7 +1189,6 @@ async function gemini(prompt) {
     body: JSON.stringify(gemini_payload),
   });
   const gemini_response = JSON.parse(await response.text());
-  //console.log(gemini_response.candidates[0].content.parts);
   return gemini_response.candidates[0].content.parts[0].text;
 }
 
@@ -1338,6 +1347,14 @@ function getDateTime() {
     " " +
     current_date.getMonth();
   return date_time;
+}
+
+function getUserId(body) {
+  if (Object.keys(body).includes("user")) {
+    return body.user.id;
+  } else {
+    return body.member.user.id;
+  }
 }
 
 async function getMeowbotData(body) {
