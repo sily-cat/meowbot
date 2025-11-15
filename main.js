@@ -156,6 +156,35 @@ Deno.serve(async (req) => {
           ),
         );
         break;
+      case "ask-context":
+        var username;
+        payload.type = 5;
+        if (Object.keys(body).includes("user")) {
+          if (body.user.global_name == null) {
+            username = body.user.username;
+          } else {
+            username = body.user.global_name;
+          }
+        } else {
+          if (body.member.nick !== null) {
+            username = body.member.nick;
+          } else if (body.member.user.global_name == null) {
+            username = body.member.user.username;
+          } else {
+            username = body.member.user.global_name;
+          }
+        }
+        editHandler(
+          gemini,
+          body,
+          meowbot_prompt(
+            username,
+            body.data.options[0].value,
+            await getMessages(body.channel_id, 20, "[NEXT]"),
+            true
+          ),
+        );
+        break;
       case "askold":
         var username;
         payload.type = 5;
@@ -1058,7 +1087,7 @@ async function updateCommands() {
       name: "getmessages",
       description: "get the last n messages sent (debug purposes)",
       type: 1,
-      contexts: [1],
+      contexts: [0, 1],
       integration_types: [0, 1],
       options: [
         {
@@ -1089,6 +1118,21 @@ async function updateCommands() {
       type: 1,
       contexts: [0],
       integration_types: [0, 1],
+    },
+    {
+      name: "ask-context",
+      description: "ask with context",
+      type: 1,
+      contexts: [0, 1],
+      integration_types: [0, 1],
+      options: [
+        {
+          name: "prompt",
+          type: 3,
+          description: "the prompt",
+          required: true,
+        },
+      ],
     },
     {
       name: "balance",
@@ -1262,6 +1306,9 @@ async function getMessages(
   var response_array = [];
   if (!ids) {
     for (const e of messages_array) {
+      if ("interaction_metadata" in e) {
+        console.log(e.interaction_metadata);
+      }
       if (e.content !== "") {
         response_array.push(`${e.author.username}: ${e.content}`);
       } else {
