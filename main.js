@@ -1310,17 +1310,17 @@ async function getMessages(
         console.log(e.interaction_metadata);
       }
       if (e.content !== "") {
-        response_array.push(`${e.author.username}: ${e.content}`);
+        response_array.unshift(`${e.author.username}: ${e.content}`);
       } else {
-        response_array.push(`${e.author.username}: [NO ACCESS]`);
+        response_array.unshift(`${e.author.username}: [NO ACCESS]`);
       }
     }
   } else {
     for (const e of messages_array) {
       if (e.content !== "") {
-        response_array.push([e.content, e.id, e.author.id]);
+        response_array.unshift([e.content, e.id, e.author.id]);
       } else {
-        response_array.push([`[NO ACCESS]`, 0, 0]);
+        response_array.unshift([`[NO ACCESS]`, 0, 0]);
       }
     }
   }
