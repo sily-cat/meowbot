@@ -1244,7 +1244,7 @@ async function gemini(input) {
     }
 
     const gemini_url =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key=" + key;
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=" + key;
 
     let requestPayload = {};
 
@@ -1287,7 +1287,7 @@ async function gemini(input) {
     if (!response.ok) {
       const errText = await response.text();
       console.error("Gemma API error:", errText);
-      return "mew... something went wrong with my thoughts... =.=";
+      return "mew... i couldn't process that request... don't spam please bc i might get banned again... =.=";
     }
 
     const gemini_response = JSON.parse(await response.text());
