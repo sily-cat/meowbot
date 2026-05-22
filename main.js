@@ -1249,7 +1249,6 @@ async function gemini(input) {
     let requestPayload = {};
 
     if (typeof input === "string") {
-      // Basic flat string standard fallback
       requestPayload = {
         contents: [
           {
@@ -1259,7 +1258,6 @@ async function gemini(input) {
         ]
       };
     } else {
-      // Modern structured object mapping (supports turn histories and native system constraints)
       requestPayload = {
         contents: input.contents,
         systemInstruction: input.systemInstruction ? {
@@ -1268,12 +1266,17 @@ async function gemini(input) {
       };
     }
 
-    // Embed REST-level Google search grounding tool dynamically
     requestPayload.tools = [
       {
         google_search: {}
       }
     ];
+
+    requestPayload.generationConfig = {
+      thinkingConfig: {
+        thinkingLevel: "MINIMAL"
+      }
+    };
 
     const response = await fetch(gemini_url, {
       method: "POST",
@@ -1288,14 +1291,18 @@ async function gemini(input) {
     }
 
     const gemini_response = JSON.parse(await response.text());
-    if (gemini_response.candidates && gemini_response.candidates[0]?.content?.parts?.[0]?.text) {
-      return gemini_response.candidates[0].content.parts[0].text;
+    if (gemini_response.candidates && gemini_response.candidates[0]?.content?.parts) {
+      const parts = gemini_response.candidates[0].content.parts;
+      const cleanParts = parts.filter(part => !part.thought);
+      if (cleanParts.length > 0 && cleanParts[0].text) {
+        return cleanParts[0].text;
+      }
     }
     console.warn("Unexpected Gemma response structure:", gemini_response);
-    return "mew... i couldn't think of anything to say... :3";
+    return "i couldn't think of anything to say... :<";
   } catch (err) {
     console.error("Error in gemini function:", err);
-    return "mew... i got a headache trying to process that... T^T";
+    return "mew... gemini broke... T^T";
   }
 }
 
