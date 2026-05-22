@@ -1,6 +1,6 @@
 //import { encodeBase64 } from "jsr:@std/encoding/base64";
 import { solveOctad } from "./octad.js";
-import { meowbot_prompt } from "./prompts.js";
+import { meowbot_system_instruction } from "./prompts.js";
 import { default as Alea, Mash } from "jsr:@iv/alea";
 import nacl from "https://esm.sh/tweetnacl@v1.0.3"; // i dont want to learn how authentication works
 import { Buffer } from "node:buffer"; // needs this for some reason? idk i copied the authentication code from discord
@@ -123,107 +123,93 @@ Deno.serve(async (req) => {
       case "say":
         payload.data.content = body.data.options[0].value;
         break;
-      case "gemini":
+      case "gemini": {
         payload.type = 5;
-        editHandler(gemini, body, body.data.options[0].value);
+        const prompt_text = body.data.options[0].value;
+        editHandler(
+          gemini, 
+          body, 
+          {
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: prompt_text }]
+              }
+            ]
+          }
+        );
         break;
-      case "ask":
-        var username;
+      }
+      case "ask": {
         payload.type = 5;
-        if (Object.keys(body).includes("user")) {
-          if (body.user.global_name == null) {
-            username = body.user.username;
-          } else {
-            username = body.user.global_name;
-          }
-        } else {
-          if (body.member.nick !== null) {
-            username = body.member.nick;
-          } else if (body.member.user.global_name == null) {
-            username = body.member.user.username;
-          } else {
-            username = body.member.user.global_name;
-          }
-        }
+        const username = getName(body);
+        const userPromptText = `username of user: ${username}. prompt: ${body.data.options[0].value}`;
+        
         editHandler(
           gemini,
           body,
-          meowbot_prompt(
-            username,
-            body.data.options[0].value /*,
-            await getMessages(body.channel_id, 20),
-            true,*/,
-          ),
+          {
+            systemInstruction: meowbot_system_instruction(),
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: userPromptText }]
+              }
+            ]
+          }
         );
         break;
-      case "ask-context":
-        var username;
+      }
+      case "ask-context": {
         payload.type = 5;
-        if (Object.keys(body).includes("user")) {
-          if (body.user.global_name == null) {
-            username = body.user.username;
-          } else {
-            username = body.user.global_name;
-          }
+        const username = getName(body);
+        const messageHistory = await getMessages(body.channel_id, 20, "", true);
+        
+        // Structured alternating message blocks mapped for the LLM
+        const contents = formatMessagesForGemini(messageHistory);
+        
+        const userPromptText = `username of user: ${username}. prompt: ${body.data.options[0].value}`;
+        
+        if (contents.length > 0 && contents[contents.length - 1].role === "user") {
+          contents[contents.length - 1].parts.push({ text: userPromptText });
         } else {
-          if (body.member.nick !== null) {
-            username = body.member.nick;
-          } else if (body.member.user.global_name == null) {
-            username = body.member.user.username;
-          } else {
-            username = body.member.user.global_name;
-          }
+          contents.push({
+            role: "user",
+            parts: [{ text: userPromptText }]
+          });
         }
-        editHandler(
-          gemini,
-          body,
-          meowbot_prompt(
-            username,
-            body.data.options[0].value,
-            await getMessages(body.channel_id, 20, "[NEXT]"),
-            true
-          ),
-        );
-        break;
-      case "askold":
-        var username;
-        payload.type = 5;
-        if (Object.keys(body).includes("user")) {
-          if (body.user.global_name == null) {
-            username = body.user.username;
-          } else {
-            username = body.user.global_name;
-          }
-        } else {
-          if (body.member.nick !== null) {
-            username = body.member.nick;
-          } else if (body.member.user.global_name == null) {
-            username = body.member.user.username;
-          } else {
-            username = body.member.user.global_name;
-          }
-        }
-        var ask_components = [
-          /*{
-                        "type": 1,
-                        "components": [
-                            {
-                                "type": 2,
-                                "label": "+",
-                                "style": 2,
-                                "custom_id": "ask_button"
-                            }
-                        ]
 
-                    }*/
-        ];
         editHandler(
           gemini,
           body,
-          meowbot_prompt(username, body.data.options[0].value),
+          {
+            systemInstruction: meowbot_system_instruction(),
+            contents: contents
+          }
+        );
+        break;
+      }
+      case "askold": {
+        payload.type = 5;
+        const username = getName(body);
+        const userPromptText = `username of user: ${username}. prompt: ${body.data.options[0].value}`;
+        var ask_components = [];
+        editHandler(
+          gemini,
+          body,
+          {
+            systemInstruction: meowbot_system_instruction(),
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: userPromptText }]
+              }
+            ]
+          },
           ask_components,
         );
         break;
+      }
       case "send":
         payload.data.content = "/send requires the `meowbot send` role";
         payload.data.flags = 64; // ephemeral
@@ -254,15 +240,17 @@ Deno.serve(async (req) => {
           parseInt(body.data.options[0].value),
         );
         break;
-      case "balance":
+      case "balance": {
         var mdata = await getMeowbotData(body);
         payload.data.content = `you have **${mdata.data.cd}** cat dollars`;
         break;
-      case "inventory":
+      }
+      case "inventory": {
         var mdata = await getMeowbotData(body);
         payload.data.content = `your inventory: ${mdata.data.inventory.join(", ")}`;
         break;
-      case "daily":
+      }
+      case "daily": {
         var mdata = await getMeowbotData(body);
         if (mdata.data.last_daily != getDateTime() || mdata.user_id == my_id) {
           payload.data.content = "you got **100** cat dollars!";
@@ -274,13 +262,14 @@ Deno.serve(async (req) => {
         }
         await writeMeowbotData(mdata);
         break;
-      case "slots":
+      }
+      case "slots": {
         var mdata = await getMeowbotData(body);
         var current_time = Date.now();
         if (mdata.data.cd < 10) {
           payload.data.flags = 64; // ephemeral
           payload.data.content = `you don't have enough cat dollars...`;
-        } else if (current_time - mdata.data.last_slots > 60000 || !("last_slots" in mdata.data)) {
+        } else if (!("last_slots" in mdata.data) || current_time - mdata.data.last_slots > 60000) {
           if (body.context == "2") {
             var slots = generateSlots();
             payload.data.content = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
@@ -289,29 +278,36 @@ Deno.serve(async (req) => {
             mdata.data.last_slots = current_time;
             await writeMeowbotData(mdata);
           } else {
-            payload.data.content = "[ <a:slots:1418319955408977951> | <a:slots:1418319955408977951> | <a:slots:1418319955408977951> ]\n...";
-            setTimeout(function() {
-              var slots = generateSlots();
-              var message_edit = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
-              mdata.data.cd -= 10;
-              mdata.data.cd += slots.cd;
-              mdata.data.last_slots = current_time;
-              writeMeowbotData(mdata);
-              editHandlerSync(body, message_edit);
-            }, 1000);
+            payload.type = 5;
+            (async () => {
+              try {
+                await editHandlerSync(body, "[ <a:slots:1418319955408977951> | <a:slots:1418319955408977951> | <a:slots:1418319955408977951> ]\n...");
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                var slots = generateSlots();
+                var message_edit = `${slots.slots}\nyou got **${slots.cd}** cat dollars!`;
+                mdata.data.cd -= 10;
+                mdata.data.cd += slots.cd;
+                mdata.data.last_slots = current_time;
+                await writeMeowbotData(mdata);
+                await editHandlerSync(body, message_edit);
+              } catch (err) {
+                console.error(err);
+              }
+            })();
           }
         } else {
           payload.data.flags = 64; // ephemeral
           payload.data.content = `you have to wait ${60 - Math.floor((current_time - mdata.data.last_slots) / 1000)} more seconds before using slots again`;
         }
         break;
-      case "heist":
+      }
+      case "heist": {
         var mdata = await getMeowbotData(body);
         var current_time = Date.now();
         if (!mdata.data.inventory.includes("thieves' tools")) {
           payload.data.flags = 64; // ephemeral
           payload.data.content = `you need thieves' tools to do a heist!`;
-        } else if (current_time - mdata.data.last_heist > 180000 || !("last_heist" in mdata.data)) {
+        } else if (!("last_heist" in mdata.data) || current_time - mdata.data.last_heist > 180000) {
           var heist = generateHeist();
           payload.data.content = `${heist.heist}\nyou got **${heist.cd}** cat dollars!`;
           mdata.data.cd += heist.cd;
@@ -322,7 +318,8 @@ Deno.serve(async (req) => {
           payload.data.content = `you have to wait ${180 - Math.floor((current_time - mdata.data.last_heist) / 1000)} more seconds before doing a heist again`;
         }
         break;
-      case "blackjack":
+      }
+      case "blackjack": {
         var mdata = await getMeowbotData(body);
         var current_time = Date.now();
         if (!mdata.data.inventory.includes("deck of cards")) {
@@ -331,7 +328,7 @@ Deno.serve(async (req) => {
         } else if (mdata.data.cd < 50) {
           payload.data.flags = 64; // ephemeral
           payload.data.content = `you don't have enough cat dollars...`;
-        } else if (current_time - mdata.data.last_bj > 120000 || !("last_bj" in mdata.data)) {
+        } else if (!("last_bj" in mdata.data) || current_time - mdata.data.last_bj > 120000) {
           var dealer_cards = [];
           var your_cards = [];
           dealer_cards.push(generateCard());
@@ -374,7 +371,8 @@ Deno.serve(async (req) => {
           payload.data.content = `you have to wait ${120 - Math.floor((current_time - mdata.data.last_bj) / 1000)} more seconds before playing blackjack again`;
         }
         break;
-      case "cat":
+      }
+      case "cat": {
         var cat = await getCat();
         payload.data.content = "[cat](" + cat + ")";
         payload.data.components = [
@@ -392,46 +390,19 @@ Deno.serve(async (req) => {
           },
         ];
         break;
+      }
       case "hungry":
         payload.data.content =
           "[hungry](https://cdn.discordapp.com/attachments/1328618249042268171/1337508935963377734/horse-min.gif)";
         break;
-      case "get avatar":
+      case "get avatar": {
         const target_id = body.data.target_id;
         const avatar_hash = body.data.resolved.users[target_id].avatar;
         payload.data.content =
           cdn + "/avatars/" + target_id + "/" + avatar_hash + ".png?size=4096";
         break;
-      /*
-        case "steal avatar": I AM STUPID
-            payload.data.flags = 64;
-            const starget_id = body.data.target_id;
-            const savatar_hash = body.data.resolved.users[starget_id].avatar;
-            const new_avatar = cdn + "/avatars/" + starget_id + "/" + savatar_hash + ".png?size=4096";
-            const old_avatar = cdn + "/avatars/" + body.user.id + "/" + body.user.avatar + ".png?size=4096";
-            payload.data.content = "old avatar:\n" + old_avatar;
-            // get base64 of new avatar
-
-            var response = await fetch(url, {
-                method: "GET",
-                headers: head
-            });
-            const avatar_buffer = await response.arrayBuffer();
-            const avatar_base64 = encodeBase64(avatar_buffer);
-
-            // patch in new avatar
-
-            var url = api + "/users/" + channel + "/messages";
-            var payload = {
-                avatar: avatar_base64
-            }
-            await fetch(url, {
-                method: "PATCH",
-                headers: head,
-                body: JSON.stringify(payload)
-            });
-            break;*/
-      case "get banner":
+      }
+      case "get banner": {
         const targetid = body.data.target_id;
         const banner_user = await get(api + "/users/" + targetid, head);
         payload.data.content =
@@ -442,7 +413,8 @@ Deno.serve(async (req) => {
           banner_user.banner +
           ".png?size=4096";
         break;
-      case "ping":
+      }
+      case "ping": {
         const date_time = getDateTime();
         payload.data.content =
           "pong!\nregion: " +
@@ -450,12 +422,13 @@ Deno.serve(async (req) => {
           "\ndatetime: " +
           date_time;
         break;
+      }
       case "octad":
         switch (body.data.options[0].name) {
           case "generate":
             payload.data.content = octadPuzzle();
             break;
-          case "solve":
+          case "solve": {
             var msg = body.data.options[0].options[0].value;
             var input_octad = [];
             for (var i = 0; i < msg.length; i++) {
@@ -480,34 +453,17 @@ Deno.serve(async (req) => {
             }
             payload.data.content = "||" + output_octad.join("") + "||";
             break;
+          }
         }
         break;
-      case "catness":
+      case "catness": {
         var username;
-        if (Object.keys(body.data).includes("options")) {
+        if (body.data.options && body.data.resolved && body.data.resolved.users) {
           const users = body.data.resolved.users;
           const key_name = Object.keys(users)[0];
-          if (users[key_name].global_name == null) {
-            username = users[key_name].username;
-          } else {
-            username = users[key_name].global_name;
-          }
+          username = users[key_name].global_name || users[key_name].username;
         } else {
-          if (Object.keys(body).includes("user")) {
-            if (body.user.global_name == null) {
-              username = body.user.username;
-            } else {
-              username = body.user.global_name;
-            }
-          } else {
-            if (body.member.nick !== null) {
-              username = body.member.nick;
-            } else if (body.member.user.global_name == null) {
-              username = body.member.user.username;
-            } else {
-              username = body.member.user.global_name;
-            }
-          }
+          username = getName(body);
         }
         if (
           username.includes("cat") ||
@@ -528,6 +484,7 @@ Deno.serve(async (req) => {
             username + " is **" + (getRandomInt(100) + 1) + "%** cat!!";
         }
         break;
+      }
     }
     if (!meowbotdata_allowed && "content" in payload.data) {
       payload.data.content = payload.data.content
@@ -548,15 +505,15 @@ Deno.serve(async (req) => {
       type: 4,
       data: {},
     };
-    switch (body.data.custom_id) {
+    switch (body.data.custom_id) {      
       /*
       dealer's card: **[J ♡]**
       your cards: **[6 ♣][5 ♢]**
       what would you like to do?
-      */
-      case "blackjack_hit":
+      */      
+     case "blackjack_hit": {
         payload.type = 6;
-        if (getUserId(body) != body.message.interaction_metadata.user.id) {
+        if (getUserId(body) != body.message.interaction_metadata?.user?.id) {
           break;
         }
         var url =
@@ -578,7 +535,7 @@ Deno.serve(async (req) => {
           your_cards_formatted.push(e.join(" "));
         }
         if (handValue(your_cards) > 21) {
-          fetch(url, {
+          await fetch(url, {
             method: "PATCH",
             headers: head,
             body: JSON.stringify({
@@ -587,7 +544,7 @@ Deno.serve(async (req) => {
             }),
           });
         } else {
-          fetch(url, {
+          await fetch(url, {
             method: "PATCH",
             headers: head,
             body: JSON.stringify({
@@ -596,9 +553,10 @@ Deno.serve(async (req) => {
           });
         }
         break;
-      case "blackjack_stand":
+      }
+      case "blackjack_stand": {
         payload.type = 6;
-        if (getUserId(body) != body.message.interaction_metadata.user.id) {
+        if (getUserId(body) != body.message.interaction_metadata?.user?.id) {
           break;
         }
         var url =
@@ -622,7 +580,7 @@ Deno.serve(async (req) => {
           dealer_cards_formatted.push(e.join(" "));
         }
         if (handValue(your_cards) > handValue(dealer_cards) || handValue(dealer_cards) > 21) {
-          fetch(url, {
+          await fetch(url, {
             method: "PATCH",
             headers: head,
             body: JSON.stringify({
@@ -632,9 +590,9 @@ Deno.serve(async (req) => {
           });
           var mdata = await getMeowbotData(body);
           mdata.data.cd += 150;
-          writeMeowbotData(mdata);
+          await writeMeowbotData(mdata);
         } else if (handValue(your_cards) == handValue(dealer_cards)) {
-          fetch(url, {
+          await fetch(url, {
             method: "PATCH",
             headers: head,
             body: JSON.stringify({
@@ -644,9 +602,9 @@ Deno.serve(async (req) => {
           });
           var mdata = await getMeowbotData(body);
           mdata.data.cd += 50;
-          writeMeowbotData(mdata);
+          await writeMeowbotData(mdata);
         } else {
-          fetch(url, {
+          await fetch(url, {
             method: "PATCH",
             headers: head,
             body: JSON.stringify({
@@ -656,7 +614,8 @@ Deno.serve(async (req) => {
           });
         }
         break;
-      case "buy_selection":
+      }
+      case "buy_selection": {
         var selected_value = body.data.values[0];
         var shop_list = shopList();
         var url =
@@ -694,7 +653,8 @@ Deno.serve(async (req) => {
           },
         ];
         break;
-      case "buy_yes":
+      }
+      case "buy_yes": {
         var shop_list = shopList();
         var shop_item = shop_list[body.message.content.split("**")[1]];
         var mdata = await getMeowbotData(body);
@@ -760,23 +720,25 @@ Deno.serve(async (req) => {
           });
           mdata.data.cd -= shop_item[1];
           mdata.data.inventory.push(shop_item[0]);
-          writeMeowbotData(mdata);
+          await writeMeowbotData(mdata);
         }
         break;
-      case "buy_no":
+      }
+      case "buy_no": {
         var url =
           api +
           "/channels/" +
           body.message.channel_id +
           "/messages/" +
           body.message.id;
-        thing = await fetch(url, {
+        await fetch(url, {
           // delete old message
           method: "DELETE",
           headers: head,
         });
         break;
-      case "ask_button":
+      }
+      case "ask_button": {
         var ask_context = body.message.content;
         payload.data.title = "ask";
         payload.data.custom_id = "ask_modal";
@@ -813,8 +775,9 @@ Deno.serve(async (req) => {
         ];
         payload.type = 9;
         break;
+      }
       //editHandler(gemini, body, meowbot_prompt(username, body.data.components[0].components[0].value, ask_context), ask_components);
-      case "anothercat": // clicked the another button!!
+      case "anothercat": { // clicked the another button!!
         var url =
           api +
           "/channels/" +
@@ -823,7 +786,7 @@ Deno.serve(async (req) => {
           body.message.id;
         console.log(url);
         console.log("another cat");
-        var thing = await fetch(url, {
+        await fetch(url, {
           // patch request to remove the old button
           method: "PATCH",
           headers: head,
@@ -846,6 +809,7 @@ Deno.serve(async (req) => {
           },
         ];
         break;
+      }
     }
     return new Response(JSON.stringify(payload), {
       // send!!
@@ -863,35 +827,38 @@ Deno.serve(async (req) => {
       data: {},
     };
     switch (body.data.custom_id) {
-      case "ask_modal":
-        var username;
+      case "ask_modal": {
         payload.type = 5;
-        if (Object.keys(body).includes("user")) {
-          if (body.user.global_name == null) {
-            username = body.user.username;
-          } else {
-            username = body.user.global_name;
-          }
-        } else {
-          if (body.member.nick !== null) {
-            username = body.member.nick;
-          } else if (body.member.user.global_name == null) {
-            username = body.member.user.username;
-          } else {
-            username = body.member.user.global_name;
-          }
-        }
+        const username = getName(body);
         var ask_context = body.data.components[1].components[0].value;
+        const userPromptText = `username of user: ${username}. prompt: ${body.data.components[0].components[0].value}`;
+        
+        // Formatted to adhere to role alternation conventions
+        const contents = [
+          {
+            role: "user",
+            parts: [{ text: "hi!" }]
+          },
+          {
+            role: "model",
+            parts: [{ text: ask_context }]
+          },
+          {
+            role: "user",
+            parts: [{ text: userPromptText }]
+          }
+        ];
+
         editHandler(
           gemini,
           body,
-          meowbot_prompt(
-            username,
-            body.data.components[0].components[0].value,
-            ask_context,
-          ),
+          {
+            systemInstruction: meowbot_system_instruction(),
+            contents: contents
+          }
         );
         break;
+      }
     }
     return new Response(JSON.stringify(payload), {
       // send!!
@@ -914,6 +881,38 @@ Deno.serve(async (req) => {
 function getRandomInt(max) {
   // stole this from mdn web docs
   return Math.floor(Math.random() * max);
+}
+
+function formatMessagesForGemini(rawMessages) {
+  const contents = [];
+  let currentRole = null;
+  let currentParts = [];
+
+  for (const msg of rawMessages) {
+    const role = msg.isBot ? "model" : "user";
+    const text = `${msg.authorName}: ${msg.content}`;
+
+    if (role === currentRole) {
+      currentParts.push({ text: text });
+    } else {
+      if (currentRole !== null) {
+        contents.push({ role: currentRole, parts: currentParts });
+      }
+      currentRole = role;
+      currentParts = [{ text: text }];
+    }
+  }
+
+  if (currentRole !== null) {
+    contents.push({ role: currentRole, parts: currentParts });
+  }
+
+  // first message must always come from a user
+  if (contents.length > 0 && contents[0].role === "model") {
+    contents.shift();
+  }
+
+  return contents;
 }
 
 function seedRandomInt(max, seed) {
@@ -941,7 +940,7 @@ function meowText() {
     "miau ~w~",
     "miau :3",
   ];
-  return meows[getRandomInt(meows.length - 1)];
+  return meows[getRandomInt(meows.length)];
 }
 
 async function getCat() {
@@ -1236,95 +1235,170 @@ async function updateCommands() {
   return response.status + " " + response.statusText;
 }
 
-async function gemini(prompt) {
-  var gemini_url =
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" +
-    Deno.env.get("GEMINI_API");
-  var gemini_payload = {
-    contents: [
+async function gemini(input) {
+  try {
+    const key = Deno.env.get("GEMINI_API");
+    if (!key) {
+      console.error("GEMINI_API environment variable is missing.");
+      return "i can't remember my API key... T^T";
+    }
+
+    const gemini_url =
+      "https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key=" + key;
+
+    let requestPayload = {};
+
+    if (typeof input === "string") {
+      // Basic flat string standard fallback
+      requestPayload = {
+        contents: [
+          {
+            role: "user",
+            parts: [{ text: input }]
+          }
+        ]
+      };
+    } else {
+      // Modern structured object mapping (supports turn histories and native system constraints)
+      requestPayload = {
+        contents: input.contents,
+        systemInstruction: input.systemInstruction ? {
+          parts: [{ text: input.systemInstruction }]
+        } : undefined
+      };
+    }
+
+    // Embed REST-level Google search grounding tool dynamically
+    requestPayload.tools = [
       {
-        parts: [{ text: prompt }],
-      },
-    ],
-  };
-  const response = await fetch(gemini_url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(gemini_payload),
-  });
-  const gemini_response = JSON.parse(await response.text());
-  return gemini_response.candidates[0].content.parts[0].text;
+        google_search: {}
+      }
+    ];
+
+    const response = await fetch(gemini_url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestPayload),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("Gemma API error:", errText);
+      return "mew... something went wrong with my thoughts... =.=";
+    }
+
+    const gemini_response = JSON.parse(await response.text());
+    if (gemini_response.candidates && gemini_response.candidates[0]?.content?.parts?.[0]?.text) {
+      return gemini_response.candidates[0].content.parts[0].text;
+    }
+    console.warn("Unexpected Gemma response structure:", gemini_response);
+    return "mew... i couldn't think of anything to say... :3";
+  } catch (err) {
+    console.error("Error in gemini function:", err);
+    return "mew... i got a headache trying to process that... T^T";
+  }
 }
 
 async function editHandler(handle, body, input, components = false) {
-  const url =
-    api + "/webhooks/" + app_id + "/" + body.token + "/messages/@original";
-  var cont = await handle(input);
-  if (cont.length > 2000) {
-    cont = cont.slice(0, 1999);
+  try {
+    const url =
+      api + "/webhooks/" + app_id + "/" + body.token + "/messages/@original";
+    var cont = await handle(input);
+    if (cont.length > 2000) {
+      cont = cont.slice(0, 1999);
+    }
+    var payload = { content: cont };
+    if (components) {
+      payload.components = components;
+    }
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: head,
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      console.error("Failed to edit interaction message:", await response.text());
+    }
+  } catch (err) {
+    console.error("Error in editHandler:", err);
   }
-  var payload = { content: cont };
-  if (components) {
-    payload.components = components;
-  }
-  const response = await fetch(url, {
-    method: "PATCH",
-    headers: head,
-    body: JSON.stringify(payload),
-  });
-  console.log(response);
 }
 
 async function editHandlerSync(body, input, components = false) {
-  const url =
-    api + "/webhooks/" + app_id + "/" + body.token + "/messages/@original";
-  var cont = input;
-  if (cont.length > 2000) {
-    cont = cont.slice(0, 1999);
+  try {
+    const url =
+      api + "/webhooks/" + app_id + "/" + body.token + "/messages/@original";
+    var cont = input;
+    if (cont.length > 2000) {
+      cont = cont.slice(0, 1999);
+    }
+    var payload = { content: cont };
+    if (components) {
+      payload.components = components;
+    }
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: head,
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) {
+      console.error("Failed to edit interaction message sync:", await response.text());
+    }
+  } catch (err) {
+    console.error("Error in editHandlerSync:", err);
   }
-  var payload = { content: cont };
-  if (components) {
-    payload.components = components;
-  }
-  const response = await fetch(url, {
-    method: "PATCH",
-    headers: head,
-    body: JSON.stringify(payload),
-  });
-  console.log(response);
 }
 
+// Added safety against non-array responses, skipped database messages in prompt context, 
+// and implemented object formatting for role parsing compatibility.
 async function getMessages(
   channel,
   num = 50,
   separator = "\n",
   return_list = false,
   ids = false,
+  skip_data = !ids,
 ) {
   const url = api + "/channels/" + channel + "/messages" + "?limit=" + num;
   const messages_array = await get(url, head);
   var response_array = [];
-  if (!ids) {
-    for (const e of messages_array) {
-      if ("interaction_metadata" in e) {
-        console.log(e.interaction_metadata);
-      }
-      if (e.content !== "") {
-        response_array.unshift(`${e.author.username}: ${e.content}`);
-      } else {
-        response_array.unshift(`${e.author.username}: [NO ACCESS]`);
-      }
+  
+  if (!Array.isArray(messages_array)) {
+    console.error("Failed to fetch messages:", messages_array);
+    return return_list ? [] : "";
+  }
+
+  for (const e of messages_array) {
+    if (skip_data && e.content.startsWith("MEOWBOTDATA")) {
+      continue;
     }
-  } else {
-    for (const e of messages_array) {
+    const authorName = e.author.id === app_id ? "meowbot-ii" : e.author.username;
+    
+    if (ids) {
+      // Keep existing structure for DB compatibility
       if (e.content !== "") {
         response_array.unshift([e.content, e.id, e.author.id]);
       } else {
         response_array.unshift([`[NO ACCESS]`, 0, 0]);
       }
+    } else if (return_list) {
+      // Structured representation for LLM context compatibility
+      response_array.unshift({
+        content: e.content !== "" ? e.content : "[NO ACCESS]",
+        authorName: authorName,
+        isBot: e.author.id === app_id
+      });
+    } else {
+      // Flat string format for debug command
+      if (e.content !== "") {
+        response_array.unshift(`${authorName}: ${e.content}`);
+      } else {
+        response_array.unshift(`${authorName}: [NO ACCESS]`);
+      }
     }
   }
-  if (return_list) {
+
+  if (return_list || ids) {
     return response_array;
   } else {
     return response_array.join(separator);
@@ -1425,13 +1499,21 @@ function getUserId(body) {
   }
 }
 
-async function getMeowbotData(body) {
-  var user_id;
-  if (Object.keys(body).includes("user")) {
-    user_id = body.user.id;
-  } else {
-    user_id = body.member.user.id;
+function getName(body) {
+  if (body.user) {
+    return body.user.global_name || body.user.username;
   }
+  if (body.member) {
+    if (body.member.nick != null) {
+      return body.member.nick;
+    }
+    return body.member.user.global_name || body.member.user.username;
+  }
+  return "User";
+}
+
+async function getMeowbotData(body) {
+  var user_id = getUserId(body);
   var url = api + "/users/@me/channels";
   var dm_response = await fetch(url, {
     // get dm channel
@@ -1447,8 +1529,12 @@ async function getMeowbotData(body) {
   var data_message_id;
   for (const e of old_messages) {
     if (e[2] == app_id && e[0].substring(0, 13) == "MEOWBOTDATA&B") {
-      meowbot_data = JSON.parse(atob(e[0].substring(13)));
-      data_message_id = e[1];
+      try {
+        meowbot_data = JSON.parse(atob(e[0].substring(13)));
+        data_message_id = e[1];
+      } catch (err) {
+        console.error("Base64 DB deserialization error:", err);
+      }
     }
   }
   var new_user = false;
@@ -1520,6 +1606,9 @@ function generateSlots() {
 }
 
 function generateCard(used_cards=[]) {
+  if (used_cards.length >= 52) {
+    return ["A", "♠"];
+  }
   const suits = [
     "♠",
     "♡",
@@ -1545,7 +1634,7 @@ function generateCard(used_cards=[]) {
   var card;
   while (!found_one) {
     card = [numbers[getRandomInt(numbers.length)], suits[getRandomInt(suits.length)]];
-    found_one = !used_cards.includes(card);
+    found_one = !used_cards.some(c => c[0] === card[0] && c[1] === card[1]);
   }
   return card;
 }
