@@ -1266,11 +1266,11 @@ async function gemini(input) {
       };
     }
 
-    requestPayload.tools = [
-      {
-        google_search: {}
-      }
-    ];
+    // requestPayload.tools = [
+    //   {
+    //     google_search: {}
+    //   }
+    // ];
 
     requestPayload.generationConfig = {
       thinkingConfig: {
